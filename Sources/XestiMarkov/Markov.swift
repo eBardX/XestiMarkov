@@ -31,6 +31,11 @@ public final class Markov<Event> where Event: Codable,
 
     // MARK: Public Initializers
 
+    /// Creates a new Markov chain by decoding from the given decoder.
+    ///
+    /// - Parameter decoder:    The decoder to read data from.
+    ///
+    /// - Throws:   `DecodingError` if required data is missing or corrupted.
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -144,6 +149,11 @@ extension Markov: Codable {
 
     // MARK: Public Instance Methods
 
+    /// Encodes this Markov chain into the given encoder.
+    ///
+    /// - Parameter encoder:    The encoder to write data to.
+    ///
+    /// - Throws:   `EncodingError` if a value fails to encode.
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 

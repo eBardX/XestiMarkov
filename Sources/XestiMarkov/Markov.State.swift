@@ -117,6 +117,12 @@ extension Markov.State: Codable {
 
     // MARK: Public Initializers
 
+    /// Creates a new state by decoding from the given decoder.
+    ///
+    /// - Parameter decoder:    The decoder to read data from.
+    ///
+    /// - Throws:   `DecodingError` if the encoded representation is missing or
+    ///             does not match any known state.
     public init(from decoder: any Decoder) throws {
         do {
             var container = try decoder.unkeyedContainer()
@@ -131,6 +137,11 @@ extension Markov.State: Codable {
 
     // MARK: Public Instance Methods
 
+    /// Encodes this state into the given encoder.
+    ///
+    /// - Parameter encoder:    The encoder to write data to.
+    ///
+    /// - Throws:   `EncodingError` if a value fails to encode.
     public func encode(to encoder: any Encoder) throws {
         switch self {
         case .begin, .end, .zero:
