@@ -3,37 +3,35 @@
 private import Foundation
 private import XestiTools
 
-/// The default order used when creating a ``Markov`` chain or
-/// ``Markov/Generator``.
+/// The default order used when creating a ``MarkovChain`` or
+/// ``MarkovChain/Generator``.
 public let defaultMarkovOrder = 1
 
 /// A Markov chain that models the statistical relationships between sequences
-/// of events.
+/// of states.
 ///
-/// The _order_ of a Markov chain determines how many preceding events are used
-/// as context when predicting the next event. A first-order Markov chain
-/// considers only the immediately preceding event; a second-order Markov chain
+/// The _order_ of a Markov chain determines how many preceding states are used
+/// as context when predicting the next state. A first-order Markov chain
+/// considers only the immediately preceding state; a second-order Markov chain
 /// considers the two most recent; and so on. A zeroth-order Markov chain
-/// ignores history entirely and selects events by overall frequency. The
+/// ignores history entirely and selects states by overall frequency. The
 /// ``maximumOrder`` property sets the highest order the Markov chain tracks; a
 /// ``Generator`` can be created at any order from zero up to that maximum.
 ///
-/// Use an ``Analyzer`` to train the Markov chain on observed event sequences,
-/// and a ``Generator`` to produce new event sequences based on the learned
+/// Use an ``Analyzer`` to train the Markov chain on observed state sequences,
+/// and a ``Generator`` to produce new state sequences based on the learned
 /// probabilities. A Markov chain is thread-safe: multiple analyzers and
 /// generators can operate on the same instance concurrently.
-///
-/// `Event` must conform to `Codable`, `Comparable`, `Hashable`, and `Sendable`.
-public final class Markov<Event> where Event: Codable,
-                                       Event: Comparable,
-                                       Event: Hashable,
-                                       Event: Sendable {
+public final class MarkovChain<State> where State: Codable,
+                                            State: Comparable,
+                                            State: Hashable,
+                                            State: Sendable {
 
     // MARK: Public Initializers
 
     /// Creates a new Markov chain by decoding from the given decoder.
     ///
-    /// - Parameter decoder:    The decoder to read data from.
+    /// - Parameter decoder:    The decoder from which to read data.
     ///
     /// - Throws:   `DecodingError` if required data is missing or corrupted.
     public init(from decoder: any Decoder) throws {
@@ -42,14 +40,14 @@ public final class Markov<Event> where Event: Codable,
         self.unsafeAccumulator = try container.decode(Accumulator.self,
                                                       forKey: .accumulator)
 
-        self.unsafeInStateMap = try container.decode(StateMap<State>.self,
-                                                     forKey: .inStateMap)
+        self.unsafeInContextMap = try container.decode(IndexMap<Context<State>>.self,
+                                                       forKey: .inContextMap)
 
         self.maximumOrder = try container.decode(Int.self,
                                                  forKey: .maximumOrder)
 
-        self.unsafeOutStateMap = try container.decode(StateMap<State>.self,
-                                                      forKey: .outStateMap)
+        self.unsafeOutContextMap = try container.decode(IndexMap<Context<State>>.self,
+                                                        forKey: .outContextMap)
     }
 
     /// Creates a new, empty Markov chain with the given maximum order.
@@ -65,9 +63,9 @@ public final class Markov<Event> where Event: Codable,
         else { return nil }
 
         self.unsafeAccumulator = Accumulator()
-        self.unsafeInStateMap = StateMap()
+        self.unsafeInContextMap = IndexMap()
         self.maximumOrder = maximumOrder
-        self.unsafeOutStateMap = StateMap()
+        self.unsafeOutContextMap = IndexMap()
     }
 
     // MARK: Public Instance Properties
@@ -77,25 +75,25 @@ public final class Markov<Event> where Event: Codable,
 
     // MARK: Private Instance Properties
 
-    private let lock = NSLock(named: "XestiMarkov.Markov.lock")
+    private let lock = NSLock(named: "XestiMarkov.MarkovChain.lock")
 
     private var unsafeAccumulator: Accumulator
-    private var unsafeInStateMap: StateMap<State>
-    private var unsafeOutStateMap: StateMap<State>
+    private var unsafeInContextMap: IndexMap<Context<State>>
+    private var unsafeOutContextMap: IndexMap<Context<State>>
 }
 
 // MARK: -
 
-extension Markov {
+extension MarkovChain {
 
     // MARK: Public Instance Methods
 
     /// Creates a new analyzer for this Markov chain.
     ///
-    /// - Returns:  A new ``Analyzer`` instance that records event
+    /// - Returns:  A new ``Analyzer`` instance that records state
     ///             observations into this Markov chain.
     public func analyzer() -> Analyzer {
-        Analyzer(markov: self)
+        Analyzer(markovChain: self)
     }
 
     /// Creates a new generator for this Markov chain at the given order.
@@ -104,54 +102,54 @@ extension Markov {
     /// `nil`.
     ///
     /// - Parameter order:  The context order to use when selecting the next
-    ///                     event. Defaults to ``defaultMarkovOrder``. Pass zero
+    ///                     state. Defaults to ``defaultMarkovOrder``. Pass zero
     ///                     for a zeroth-order (frequency-only) generator.
     ///
-    /// - Returns:  A new ``Generator`` instance seeded with a snapshot of this
-    ///             Markov chain’s current state, or `nil` if `order` is out of
-    ///             range.
+    /// - Returns:  A new ``Generator`` instance seeded with a snapshot of the
+    ///             current state of this Markov chain, or `nil` if `order` is
+    ///             out of range.
     public func generator(order: Int = defaultMarkovOrder) -> Generator? {
-        Generator(markov: self,
+        Generator(markovChain: self,
                   order: order)
     }
 
-    // MARK: Internal Nested Types
+    // MARK: Internal Type Aliases
 
-    internal typealias Snapshot = (inStateMap: StateMap<State>,
-                                   outStateMap: StateMap<State>,
+    internal typealias Snapshot = (inContextMap: IndexMap<Context<State>>,
+                                   outContextMap: IndexMap<Context<State>>,
                                    accumulator: Accumulator)
 
     // MARK: Internal Instance Properties
 
     internal var snapshot: Snapshot {
         lock.withLock {
-            (unsafeInStateMap, unsafeOutStateMap, unsafeAccumulator)
+            (unsafeInContextMap, unsafeOutContextMap, unsafeAccumulator)
         }
     }
 
     // MARK: Internal Instance Methods
 
-    internal func increment(inState: State,
-                            outState: State) {
+    internal func increment(inContext: Context<State>,
+                            outContext: Context<State>) {
         lock.withLock {
-            let (_, _, simpleOutState) = unsafeOutStateMap.insert(element: outState)
-            let (_, _, simpleInState) = unsafeInStateMap.insert(element: inState)
+            let (_, _, outIndex) = unsafeOutContextMap.insert(element: outContext)
+            let (_, _, inIndex) = unsafeInContextMap.insert(element: inContext)
 
-            unsafeAccumulator.increment(inState: simpleInState,
-                                        outState: simpleOutState)
+            unsafeAccumulator.increment(inIndex: inIndex,
+                                        outIndex: outIndex)
         }
     }
 }
 
 // MARK: - Codable
 
-extension Markov: Codable {
+extension MarkovChain: Codable {
 
     // MARK: Public Instance Methods
 
     /// Encodes this Markov chain into the given encoder.
     ///
-    /// - Parameter encoder:    The encoder to write data to.
+    /// - Parameter encoder:    The encoder to which to write data.
     ///
     /// - Throws:   `EncodingError` if a value fails to encode.
     public func encode(to encoder: any Encoder) throws {
@@ -165,11 +163,11 @@ extension Markov: Codable {
         try container.encode(maximumOrder,
                              forKey: .maximumOrder)
 
-        try container.encode(ss.inStateMap,
-                             forKey: .inStateMap)
+        try container.encode(ss.inContextMap,
+                             forKey: .inContextMap)
 
-        try container.encode(ss.outStateMap,
-                             forKey: .outStateMap)
+        try container.encode(ss.outContextMap,
+                             forKey: .outContextMap)
 
         try container.encode(ss.accumulator,
                              forKey: .accumulator)
@@ -179,16 +177,16 @@ extension Markov: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case accumulator
-        case inStateMap
+        case inContextMap
         case maximumOrder
-        case outStateMap
+        case outContextMap
     }
 }
 
 // MARK: - Sendable
 
-// Thread safety is guaranteed by the NSLock in `increment(inState:outState:)`
-// and `snapshot`. The `unsafe*` stored properties must never be accessed
-// outside of those two locked regions.
-extension Markov: @unchecked Sendable {
+// Thread safety is guaranteed by the NSLock in
+// `increment(inContext:outContext:)` and `snapshot`. The `unsafe*` stored
+// properties must never be accessed outside of those two locked regions.
+extension MarkovChain: @unchecked Sendable {
 }

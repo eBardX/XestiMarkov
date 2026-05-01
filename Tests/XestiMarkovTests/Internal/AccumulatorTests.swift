@@ -32,15 +32,15 @@ extension AccumulatorTests {
 
         var accum = Accumulator()
 
-        accum.increment(inState: 3, outState: 5)
-        accum.increment(inState: 5, outState: 4)
-        accum.increment(inState: 7, outState: 3)
-        accum.increment(inState: 5, outState: 4)
-        accum.increment(inState: 7, outState: 3)
-        accum.increment(inState: 5, outState: 2)
-        accum.increment(inState: 5, outState: 3)
-        accum.increment(inState: 7, outState: 2)
-        accum.increment(inState: 3, outState: 3)
+        accum.increment(inIndex: 3, outIndex: 5)
+        accum.increment(inIndex: 5, outIndex: 4)
+        accum.increment(inIndex: 7, outIndex: 3)
+        accum.increment(inIndex: 5, outIndex: 4)
+        accum.increment(inIndex: 7, outIndex: 3)
+        accum.increment(inIndex: 5, outIndex: 2)
+        accum.increment(inIndex: 5, outIndex: 3)
+        accum.increment(inIndex: 7, outIndex: 2)
+        accum.increment(inIndex: 3, outIndex: 3)
 
         let data = try JSONEncoder().encode(accum)
         let decoded = try JSONDecoder().decode(Accumulator.self, from: data)
@@ -67,15 +67,15 @@ extension AccumulatorTests {
 
         var accum = Accumulator()
 
-        accum.increment(inState: 3, outState: 5)
-        accum.increment(inState: 5, outState: 4)
-        accum.increment(inState: 7, outState: 3)
-        accum.increment(inState: 5, outState: 4)
-        accum.increment(inState: 7, outState: 3)
-        accum.increment(inState: 5, outState: 2)
-        accum.increment(inState: 5, outState: 3)
-        accum.increment(inState: 7, outState: 2)
-        accum.increment(inState: 3, outState: 3)
+        accum.increment(inIndex: 3, outIndex: 5)
+        accum.increment(inIndex: 5, outIndex: 4)
+        accum.increment(inIndex: 7, outIndex: 3)
+        accum.increment(inIndex: 5, outIndex: 4)
+        accum.increment(inIndex: 7, outIndex: 3)
+        accum.increment(inIndex: 5, outIndex: 2)
+        accum.increment(inIndex: 5, outIndex: 3)
+        accum.increment(inIndex: 7, outIndex: 2)
+        accum.increment(inIndex: 3, outIndex: 3)
 
         #expect(accum.count == expectedValue)
     }
@@ -101,15 +101,15 @@ extension AccumulatorTests {
 
         var accum = Accumulator()
 
-        accum.increment(inState: 3, outState: 5)
-        accum.increment(inState: 5, outState: 4)
-        accum.increment(inState: 7, outState: 3)
-        accum.increment(inState: 5, outState: 4)
-        accum.increment(inState: 7, outState: 3)
-        accum.increment(inState: 5, outState: 2)
-        accum.increment(inState: 5, outState: 3)
-        accum.increment(inState: 7, outState: 2)
-        accum.increment(inState: 3, outState: 3)
+        accum.increment(inIndex: 3, outIndex: 5)
+        accum.increment(inIndex: 5, outIndex: 4)
+        accum.increment(inIndex: 7, outIndex: 3)
+        accum.increment(inIndex: 5, outIndex: 4)
+        accum.increment(inIndex: 7, outIndex: 3)
+        accum.increment(inIndex: 5, outIndex: 2)
+        accum.increment(inIndex: 5, outIndex: 3)
+        accum.increment(inIndex: 7, outIndex: 2)
+        accum.increment(inIndex: 3, outIndex: 3)
 
         #expect(accum.extractElements(for: 3) == expectedValue3)
         #expect(accum.extractElements(for: 5) == expectedValue5)
@@ -125,7 +125,7 @@ extension AccumulatorTests {
     func isEmpty_notEmpty() {
         var accum = Accumulator()
 
-        accum.increment(inState: 1, outState: 2)
+        accum.increment(inIndex: 1, outIndex: 2)
 
         #expect(!accum.isEmpty)
     }

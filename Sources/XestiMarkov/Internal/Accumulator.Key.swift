@@ -8,8 +8,8 @@ extension Accumulator {
 
         // MARK: Internal Instance Properties
 
-        internal let inState: Int
-        internal let outState: Int
+        internal let inIndex: Int
+        internal let outIndex: Int
     }
 }
 
@@ -18,7 +18,7 @@ extension Accumulator {
 extension Accumulator.Key: Comparable {
     internal static func < (lhs: Self,
                             rhs: Self) -> Bool {
-        (lhs.inState, lhs.outState) < (rhs.inState, rhs.outState)
+        (lhs.inIndex, lhs.outIndex) < (rhs.inIndex, rhs.outIndex)
     }
 }
 

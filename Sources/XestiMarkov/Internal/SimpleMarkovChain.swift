@@ -1,6 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-internal struct SimpleMarkov {
+internal struct SimpleMarkovChain {
 
     // MARK: Internal Initializers
 
@@ -12,15 +12,15 @@ internal struct SimpleMarkov {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func next(after inState: Int) -> Int? {
-        guard let outGroup = inOutMap[inState]
+    internal mutating func next(after inIndex: Int) -> Int? {
+        guard let outGroup = inOutMap[inIndex]
         else { return nil }
 
         let roll = UInt.random(in: 0..<outGroup.totalWeight,
                                using: &rng)
 
         for outPair in outGroup.outPairs where roll < outPair.runWeight {
-            return outPair.outState
+            return outPair.outIndex
         }
 
         return nil
@@ -29,7 +29,7 @@ internal struct SimpleMarkov {
     // MARK: Private Nested Types
 
     private typealias OutGroup = (totalWeight: UInt, outPairs: [OutPair])
-    private typealias OutPair  = (outState: Int, runWeight: UInt)
+    private typealias OutPair  = (outIndex: Int, runWeight: UInt)
     private typealias InOutMap = [Int: OutGroup]
 
     // MARK: Private Type Methods
@@ -38,21 +38,21 @@ internal struct SimpleMarkov {
         var rawMap: [Int: [OutPair]] = [:]
 
         for (key, value) in accumulator.weightMap {
-            rawMap[key.inState, default: []].append((key.outState, value))
+            rawMap[key.inIndex, default: []].append((key.outIndex, value))
         }
 
         var inOutMap: InOutMap = [:]
 
-        for (inState, outPairs) in rawMap {
+        for (inIndex, outPairs) in rawMap {
             var runWeight: UInt = 0
 
             let cumulativePairs = outPairs.map { pair -> OutPair in
                 runWeight += pair.runWeight
 
-                return (pair.outState, runWeight)
+                return (pair.outIndex, runWeight)
             }
 
-            inOutMap[inState] = (runWeight, cumulativePairs)
+            inOutMap[inIndex] = (runWeight, cumulativePairs)
         }
 
         return inOutMap

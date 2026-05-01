@@ -3,32 +3,32 @@
 import Testing
 @testable import XestiMarkov
 
-struct StateMapTests {
+struct IndexMapTests {
 }
 
 // MARK: -
 
-extension StateMapTests {
+extension IndexMapTests {
     @Test
     func count_empty() {
         let expectedValue = 0
 
-        let smap = StateMap<String>()
+        let imap = IndexMap<String>()
 
-        #expect(smap.count == expectedValue)
+        #expect(imap.count == expectedValue)
     }
 
     @Test
     func count_notEmpty() {
         let expectedValue = 11
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
         for idx in 0..<expectedValue {
-            smap.insert(element: "fubar-\(idx)")
+            imap.insert(element: "fubar-\(idx)")
         }
 
-        #expect(smap.count == expectedValue)
+        #expect(imap.count == expectedValue)
     }
 
     @Test
@@ -37,17 +37,17 @@ extension StateMapTests {
         let expectedInserted = false
         let expectedIndex = 7
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
         for idx in 0..<11 {
-            smap.insert(element: "fubar-\(idx)")
+            imap.insert(element: "fubar-\(idx)")
         }
 
-        let actualResult = smap.insert(element: expectedElement)
+        let actualResult = imap.insert(element: expectedElement)
 
         #expect(actualResult.element == expectedElement)
         #expect(actualResult.inserted == expectedInserted)
-        #expect(actualResult.state == expectedIndex)
+        #expect(actualResult.index == expectedIndex)
     }
 
     @Test
@@ -56,13 +56,13 @@ extension StateMapTests {
         let expectedInserted = true
         let expectedIndex = 0
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
-        let actualResult = smap.insert(element: expectedElement)
+        let actualResult = imap.insert(element: expectedElement)
 
         #expect(actualResult.element == expectedElement)
         #expect(actualResult.inserted == expectedInserted)
-        #expect(actualResult.state == expectedIndex)
+        #expect(actualResult.index == expectedIndex)
     }
 
     @Test
@@ -71,88 +71,88 @@ extension StateMapTests {
         let expectedInserted = true
         let expectedIndex = 11
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
         for idx in 0..<11 {
-            smap.insert(element: "fubar-\(idx)")
+            imap.insert(element: "fubar-\(idx)")
         }
 
-        let actualResult = smap.insert(element: expectedElement)
+        let actualResult = imap.insert(element: expectedElement)
 
         #expect(actualResult.element == expectedElement)
         #expect(actualResult.inserted == expectedInserted)
-        #expect(actualResult.state == expectedIndex)
+        #expect(actualResult.index == expectedIndex)
     }
 
     @Test
     func subscriptElement_empty() {
         let expectedValue: Int? = nil
 
-        let smap = StateMap<String>()
+        let imap = IndexMap<String>()
 
-        #expect(smap["bogus"] == expectedValue)
+        #expect(imap["bogus"] == expectedValue)
     }
 
     @Test
     func subscriptElement_found() {
         let expectedValue: Int = 7
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
         for idx in 0..<11 {
-            smap.insert(element: "fubar-\(idx)")
+            imap.insert(element: "fubar-\(idx)")
         }
 
-        #expect(smap["fubar-7"] == expectedValue)
+        #expect(imap["fubar-7"] == expectedValue)
     }
 
     @Test
     func subscriptElement_missing() {
         let expectedValue: Int? = nil
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
         for idx in 0..<11 {
-            smap.insert(element: "fubar-\(idx)")
+            imap.insert(element: "fubar-\(idx)")
         }
 
-        #expect(smap["bogus-1"] == expectedValue)
-        #expect(smap["fubar-11"] == expectedValue)
+        #expect(imap["bogus-1"] == expectedValue)
+        #expect(imap["fubar-11"] == expectedValue)
     }
 
     @Test
-    func subscriptState_empty() {
+    func subscriptIndex_empty() {
         let expectedValue: String? = nil
 
-        let smap = StateMap<String>()
+        let imap = IndexMap<String>()
 
-        #expect(smap[666] == expectedValue)
+        #expect(imap[666] == expectedValue)
     }
 
     @Test
-    func subscriptState_found() {
+    func subscriptIndex_found() {
         let expectedValue = "fubar-7"
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
         for idx in 0..<11 {
-            smap.insert(element: "fubar-\(idx)")
+            imap.insert(element: "fubar-\(idx)")
         }
 
-        #expect(smap[7] == expectedValue)
+        #expect(imap[7] == expectedValue)
     }
 
     @Test
-    func subscriptState_outOfRange() {
+    func subscriptIndex_outOfRange() {
         let expectedValue: String? = nil
 
-        var smap = StateMap<String>()
+        var imap = IndexMap<String>()
 
         for idx in 0..<11 {
-            smap.insert(element: "fubar-\(idx)")
+            imap.insert(element: "fubar-\(idx)")
         }
 
-        #expect(smap[-13] == expectedValue)
-        #expect(smap[666] == expectedValue)
+        #expect(imap[-13] == expectedValue)
+        #expect(imap[666] == expectedValue)
     }
 }

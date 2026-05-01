@@ -5,7 +5,7 @@ internal struct Accumulator {
     // MARK: Internal Initializers
 
     internal init() {
-        self.inStateMap = [:]
+        self.inIndexMap = [:]
         self.weightMap = [:]
     }
 
@@ -15,7 +15,7 @@ internal struct Accumulator {
 
     // MARK: Private Instance Properties
 
-    private var inStateMap: [Int: [Key: UInt]]
+    private var inIndexMap: [Int: [Key: UInt]]
 }
 
 // MARK: -
@@ -34,18 +34,18 @@ extension Accumulator {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func increment(inState: Int,
-                                     outState: Int) {
-        let key = Key(inState: inState,
-                      outState: outState)
+    internal mutating func increment(inIndex: Int,
+                                     outIndex: Int) {
+        let key = Key(inIndex: inIndex,
+                      outIndex: outIndex)
         let newWeight = weightMap[key, default: 0] + 1
 
-        inStateMap[inState, default: [:]][key] = newWeight
+        inIndexMap[inIndex, default: [:]][key] = newWeight
         weightMap[key] = newWeight
     }
 
-    internal func extractElements(for inState: Int) -> [Dictionary<Key, UInt>.Element] {
-        Array(inStateMap[inState, default: [:]])
+    internal func extractElements(for inIndex: Int) -> [Dictionary<Key, UInt>.Element] {
+        Array(inIndexMap[inIndex, default: [:]])
     }
 }
 
@@ -63,21 +63,21 @@ extension Accumulator: Codable {
         while !container.isAtEnd {
             var nestedContainer = try container.nestedUnkeyedContainer()
 
-            let inState = try nestedContainer.decode(Int.self)
-            let outState = try nestedContainer.decode(Int.self)
-            let key = Key(inState: inState,
-                          outState: outState)
+            let inIndex = try nestedContainer.decode(Int.self)
+            let outIndex = try nestedContainer.decode(Int.self)
+            let key = Key(inIndex: inIndex,
+                          outIndex: outIndex)
 
             tmpWeightMap[key] = try nestedContainer.decode(UInt.self)
         }
 
-        var tmpInStateMap: [Int: [Key: UInt]] = [:]
+        var tmpInIndexMap: [Int: [Key: UInt]] = [:]
 
         for (key, value) in tmpWeightMap {
-            tmpInStateMap[key.inState, default: [:]][key] = value
+            tmpInIndexMap[key.inIndex, default: [:]][key] = value
         }
 
-        self.inStateMap = tmpInStateMap
+        self.inIndexMap = tmpInIndexMap
         self.weightMap = tmpWeightMap
     }
 
@@ -89,8 +89,8 @@ extension Accumulator: Codable {
         for (key, value) in weightMap {
             var nestedContainer = container.nestedUnkeyedContainer()
 
-            try nestedContainer.encode(key.inState)
-            try nestedContainer.encode(key.outState)
+            try nestedContainer.encode(key.inIndex)
+            try nestedContainer.encode(key.outIndex)
             try nestedContainer.encode(value)
         }
     }

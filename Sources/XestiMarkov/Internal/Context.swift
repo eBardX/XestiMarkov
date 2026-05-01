@@ -1,40 +1,19 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-extension Markov {
-
-    // MARK: Public Nested Types
-
-    /// A state in a Markov chain, representing the context used to model
-    /// transitions between events.
-    ///
-    /// A state can be one of five kinds:
-    /// - ``begin`` and ``end`` mark the boundaries of an event sequence.
-    /// - ``single(_:)`` wraps a single event.
-    /// - ``sequence(_:)`` wraps an ordered sequence of states used for higher-order
-    ///   context.
-    /// - ``zero`` is the root state from which zeroth-order transitions originate.
-    public enum State {
-        /// The implicit state that precedes the first event in a sequence.
-        case begin
-
-        /// The implicit state that follows the last event in a sequence.
-        case end
-
-        /// A state composed of an ordered sequence of states, used to represent
-        /// higher-order context.
-        case sequence(StateSequence)
-
-        /// A state wrapping a single event.
-        case single(Event)
-
-        /// The root state used for zeroth-order (frequency-only) transitions.
-        case zero
-    }
+internal enum Context<State> where State: Codable,
+                                   State: Comparable,
+                                   State: Hashable,
+                                   State: Sendable {
+    case begin
+    case end
+    case sequence(ContextSequence<State>)
+    case single(State)
+    case zero
 }
 
 // MARK: -
 
-extension Markov.State {
+extension Context {
 
     // MARK: Internal Instance Properties
 
@@ -43,8 +22,8 @@ extension Markov.State {
         case .end:
             false
 
-        case let .sequence(states):
-            states.last?.hasNext ?? false
+        case let .sequence(seq):
+            seq.last?.hasNext ?? false
 
         default:
             true
@@ -53,27 +32,27 @@ extension Markov.State {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func append(state: Self,
+    internal mutating func append(context: Self,
                                   limit: Int) {
-        var states = _selfAsSequence()
+        var seq = _selfAsSequence()
 
-        states.append(state: state,
-                      limit: limit)
+        seq.append(context: context,
+                   limit: limit)
 
-        switch states.count {
+        switch seq.count {
         case 0:
             self = .zero
 
         case 1:
-            self = states[0]
+            self = seq[0]
 
         default:
-            self = .sequence(states)
+            self = .sequence(seq)
         }
     }
 
-    internal func canAppend(state: Self) -> Bool {
-        switch (self, state) {
+    internal func canAppend(context: Self) -> Bool {
+        switch (self, context) {
         case (_, .begin),
             (_, .sequence),
             (_, .zero),
@@ -82,7 +61,7 @@ extension Markov.State {
             false
 
         case let (.sequence(seq), _):
-            seq.last?.canAppend(state: state) ?? false
+            seq.last?.canAppend(context: context) ?? false
 
         case (.begin, .end),
             (.begin, .single),
@@ -95,35 +74,29 @@ extension Markov.State {
 
     // MARK: Private Instance Methods
 
-    private func _selfAsSequence() -> Markov.StateSequence {
+    private func _selfAsSequence() -> ContextSequence<State> {
         switch self {
-        case let .sequence(states):
-            return states
+        case let .sequence(seq):
+            return seq
 
         default:
-            var states = Markov.StateSequence()
+            var seq = ContextSequence<State>()
 
-            states.append(state: self,
-                          limit: 1)
+            seq.append(context: self,
+                       limit: 1)
 
-            return states
+            return seq
         }
     }
 }
 
 // MARK: - Codable
 
-extension Markov.State: Codable {
+extension Context: Codable {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
-    /// Creates a new state by decoding from the given decoder.
-    ///
-    /// - Parameter decoder:    The decoder to read data from.
-    ///
-    /// - Throws:   `DecodingError` if the encoded representation is missing or
-    ///             does not match any known state.
-    public init(from decoder: any Decoder) throws {
+    init(from decoder: any Decoder) throws {
         do {
             var container = try decoder.unkeyedContainer()
 
@@ -135,14 +108,9 @@ extension Markov.State: Codable {
         }
     }
 
-    // MARK: Public Instance Methods
+    // MARK: Internal Instance Methods
 
-    /// Encodes this state into the given encoder.
-    ///
-    /// - Parameter encoder:    The encoder to write data to.
-    ///
-    /// - Throws:   `EncodingError` if a value fails to encode.
-    public func encode(to encoder: any Encoder) throws {
+    func encode(to encoder: any Encoder) throws {
         switch self {
         case .begin, .end, .zero:
             var container = encoder.singleValueContainer()
@@ -178,10 +146,10 @@ extension Markov.State: Codable {
     private static func _decode(from container: inout any UnkeyedDecodingContainer) throws -> Self {
         switch try container.decode(String.self) {
         case "sequence":
-            try .sequence(container.decode(Markov.StateSequence.self))
+            try .sequence(container.decode(ContextSequence<State>.self))
 
         case "single":
-            try .single(container.decode(Event.self))
+            try .single(container.decode(State.self))
 
         default:
             throw DecodingError.dataCorruptedError(in: container,
@@ -211,13 +179,13 @@ extension Markov.State: Codable {
 
     private func _encode(to container: inout any UnkeyedEncodingContainer) throws {
         switch self {
-        case let .sequence(events):
+        case let .sequence(seq):
             try container.encode("sequence")
-            try container.encode(events)
+            try container.encode(seq)
 
-        case let .single(event):
+        case let .single(state):
             try container.encode("single")
-            try container.encode(event)
+            try container.encode(state)
 
         default:
             throw EncodingError.invalidValue(self,
@@ -229,9 +197,9 @@ extension Markov.State: Codable {
 
 // MARK: - Comparable
 
-extension Markov.State: Comparable {
-    public static func < (lhs: Self,
-                          rhs: Self) -> Bool {
+extension Context: Comparable {
+    static func < (lhs: Self,
+                   rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.begin, .end),
             (.begin, .sequence),
@@ -245,11 +213,11 @@ extension Markov.State: Comparable {
             (.zero, .single):
             true
 
-        case let (.sequence(levents), .sequence(revents)):
-            levents < revents
+        case let (.sequence(lseq), .sequence(rseq)):
+            lseq < rseq
 
-        case let (.single(levent), .single(revent)):
-            levent < revent
+        case let (.single(lstate), .single(rstate)):
+            lstate < rstate
 
         default:
             false
@@ -259,10 +227,10 @@ extension Markov.State: Comparable {
 
 // MARK: - Hashable
 
-extension Markov.State: Hashable {
+extension Context: Hashable {
 }
 
 // MARK: - Sendable
 
-extension Markov.State: Sendable {
+extension Context: Sendable {
 }
