@@ -20,4 +20,4 @@ XestiMarkov is available under [the MIT license][license].
 
 [docc]:     https://www.swift.org/documentation/docc/
 [license]:  https://github.com/eBardX/XestiMarkov/blob/main/LICENSE.md
-[refdoc]:   https://eBardX.github.io/XestiMarkov/documentation/xestimarkov
+[refdoc]:   https://eBardX.github.io/xesti-packages-docs/documentation/xestimarkov
