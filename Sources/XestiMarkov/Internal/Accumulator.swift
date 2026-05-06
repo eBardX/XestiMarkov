@@ -35,10 +35,11 @@ extension Accumulator {
     // MARK: Internal Instance Methods
 
     internal mutating func increment(inIndex: Int,
-                                     outIndex: Int) {
+                                     outIndex: Int,
+                                     by weight: UInt = 1) {
         let key = Key(inIndex: inIndex,
                       outIndex: outIndex)
-        let newWeight = weightMap[key, default: 0] + 1
+        let newWeight = weightMap[key, default: 0] + weight
 
         inIndexMap[inIndex, default: [:]][key] = newWeight
         weightMap[key] = newWeight

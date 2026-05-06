@@ -8,8 +8,8 @@ extension MarkovChain {
     /// transitions into a Markov chain.
     ///
     /// You can create an analyzer via ``MarkovChain/analyzer()``. Call
-    /// ``analyze(_:)`` one or more times to train the Markov chain on the
-    /// provided state sequences.
+    /// ``analyze(sequence:)`` one or more times to train the Markov chain on
+    /// the provided state sequences.
     public struct Analyzer {
 
         // MARK: Public Instance Properties
@@ -28,9 +28,27 @@ extension MarkovChain.Analyzer {
     /// Analyzes the provided state sequence and records the observed
     /// transitions into the Markov chain.
     ///
-    /// - Parameter states:    The sequence of states to analyze.
+    /// If `states` is empty, this method has no effect.
+    ///
+    /// - Parameter states: The sequence of states to analyze.
+    ///
+    /// - Note: Renamed to ``analyze(sequence:)``.
+    @available(*, deprecated, renamed: "analyze(sequence:)")
     public func analyze(_ states: [State]) {
-        let contexts: [Context<State>] = states.map { .single($0) }
+        analyze(sequence: states)
+    }
+
+    /// Analyzes the provided state sequence and records the observed
+    /// transitions into the Markov chain.
+    ///
+    /// If `sequence` is empty, this method has no effect.
+    ///
+    /// - Parameter sequence:   The sequence of states to analyze.
+    public func analyze(sequence: [State]) {
+        guard !sequence.isEmpty
+        else { return }
+
+        let contexts: [Context<State>] = sequence.map { .single($0) }
 
         _analyze0(contexts: contexts)
 
@@ -44,6 +62,49 @@ extension MarkovChain.Analyzer {
         for order in 2...markovChain.maximumOrder {
             _analyzeN(contexts: enhancedContexts,
                       order: order)
+        }
+    }
+
+    /// Analyzes each of the provided state sequences and records the observed
+    /// transitions into the Markov chain.
+    ///
+    /// This is equivalent to calling ``analyze(sequence:)`` once per sequence.
+    /// Each sequence is treated as an independent observation: begin and end
+    /// markers are implied per sequence, not across all sequences.
+    ///
+    /// - Parameter sequences:  The sequences of states to analyze.
+    public func analyze(sequences: [[State]]) {
+        for sequence in sequences {
+            analyze(sequence: sequence)
+        }
+    }
+
+    /// Merges all recorded transitions from the provided Markov chain into the
+    /// Markov chain associated with this analyzer.
+    ///
+    /// Higher-order contexts from the provided Markov chain that exceed the
+    /// ``MarkovChain/maximumOrder`` of the associated Markov chain are silently
+    /// ignored.
+    ///
+    /// - Parameter other:  The Markov chain to merge.
+    public func merge(_ other: MarkovChain<State>) {
+        let (sourceInMap, sourceOutMap, sourceAccumulator) = other.snapshot
+
+        for (key, weight) in sourceAccumulator.weightMap {
+            guard let inContext = sourceInMap[key.inIndex]
+            else { continue }
+
+            guard let outContext = sourceOutMap[key.outIndex]
+            else { continue }
+
+            guard let order = inContext.order,
+                  order <= markovChain.maximumOrder
+            else { continue }
+
+            for _ in 0..<weight {
+                markovChain.increment(inContext: inContext,
+                                      outContext: outContext)
+            }
         }
     }
 

@@ -30,6 +30,22 @@ extension Context {
         }
     }
 
+    internal var order: Int? {
+        switch self {
+        case .zero:
+            0
+
+        case .begin, .single:
+            1
+
+        case let .sequence(seq):
+            seq.count
+
+        case .end:
+            nil
+        }
+    }
+
     // MARK: Internal Instance Methods
 
     internal mutating func append(context: Self,

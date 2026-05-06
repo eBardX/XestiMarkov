@@ -7,7 +7,7 @@ extension MarkovChain.Transition {
     /// The source (input side) of a Markov chain transition — the preceding
     /// state context.
     public enum Source {
-        /// The implicit start of a sequence.
+        /// The implicit start of the sequence.
         case begin
 
         /// One or more preceding states. A one-element array indicates a

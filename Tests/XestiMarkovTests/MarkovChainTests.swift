@@ -16,7 +16,7 @@ extension MarkovChainTests {
 
         let analyzer = original.analyzer()
 
-        analyzer.analyze(["a", "b", "c", "a", "b"])
+        analyzer.analyze(sequence: ["a", "b", "c", "a", "b"])
 
         let data = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(MarkovChain<String>.self, from: data)
@@ -47,7 +47,7 @@ extension MarkovChainTests {
 
         let analyzer = markovChain.analyzer()
 
-        analyzer.analyze(["a", "b", "a"])
+        analyzer.analyze(sequence: ["a", "b", "a"])
 
         var count = 0
 

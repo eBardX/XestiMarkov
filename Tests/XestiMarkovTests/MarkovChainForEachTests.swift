@@ -25,7 +25,7 @@ extension MarkovChainForEachTests {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
         let analyzer = markovChain.analyzer()
 
-        analyzer.analyze(["a", "b"])
+        analyzer.analyze(sequence: ["a", "b"])
 
         var sources: [MarkovChain<String>.Transition.Source] = []
         var targets: [MarkovChain<String>.Transition.Target] = []
@@ -47,8 +47,8 @@ extension MarkovChainForEachTests {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
         let analyzer = markovChain.analyzer()
 
-        analyzer.analyze(["a", "b"])
-        analyzer.analyze(["a", "c"])
+        analyzer.analyze(sequence: ["a", "b"])
+        analyzer.analyze(sequence: ["a", "c"])
 
         var sources: [MarkovChain<String>.Transition.Source] = []
         var targets: [MarkovChain<String>.Transition.Target] = []
@@ -70,8 +70,8 @@ extension MarkovChainForEachTests {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
         let analyzer = markovChain.analyzer()
 
-        analyzer.analyze(["a", "b"])
-        analyzer.analyze(["a", "b"])
+        analyzer.analyze(sequence: ["a", "b"])
+        analyzer.analyze(sequence: ["a", "b"])
 
         var sources: [MarkovChain<String>.Transition.Source] = []
         var targets: [MarkovChain<String>.Transition.Target] = []
@@ -93,7 +93,7 @@ extension MarkovChainForEachTests {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
         let analyzer = markovChain.analyzer()
 
-        analyzer.analyze(["a"])
+        analyzer.analyze(sequence: ["a"])
 
         var sources: [MarkovChain<String>.Transition.Source] = []
         var targets: [MarkovChain<String>.Transition.Target] = []
@@ -115,7 +115,7 @@ extension MarkovChainForEachTests {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
         let analyzer = markovChain.analyzer()
 
-        analyzer.analyze(["b", "a"])
+        analyzer.analyze(sequence: ["b", "a"])
 
         var sources: [MarkovChain<String>.Transition.Source] = []
         var targets: [MarkovChain<String>.Transition.Target] = []
