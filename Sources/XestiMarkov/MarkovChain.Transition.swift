@@ -4,8 +4,8 @@ extension MarkovChain {
 
     // MARK: Public Nested Types
 
-    /// Describes a single transition recorded in a Markov chain, expressed
-    /// entirely in terms of states.
+    /// A single transition recorded in a Markov chain, expressed in terms of
+    /// states.
     public struct Transition {
 
         // MARK: Public Instance Properties

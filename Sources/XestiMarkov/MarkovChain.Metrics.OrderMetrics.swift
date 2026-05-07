@@ -1,17 +1,25 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-extension MarkovChain {
+extension MarkovChain.Metrics {
 
     // MARK: Public Nested Types
 
-    /// Statistics describing the training adequacy of a Markov chain at a
-    /// specific order.
+    /// Per-order metrics for a Markov chain at a specific order.
     ///
-    /// Obtain an instance via ``MarkovChain/statistics(forOrder:)``.
-    @available(*, deprecated, renamed: "MarkovChain.Metrics")
-    public struct Statistics {
+    /// Obtain instances via ``MarkovChain/metrics()``.
+    public struct OrderMetrics {
 
         // MARK: Public Instance Properties
+
+        /// The training adequacy ratio at this order.
+        ///
+        /// `nil` for order `0` (not meaningful there) and when the chain is
+        /// empty (avoids division by zero). Otherwise `totalTransitions /
+        /// (10·kⁿ)`, where *k* is ``MarkovChain/Metrics/distinctStates`` and
+        /// *n* is ``order``. A value ≥ `1.0` indicates adequate training for
+        /// generation at this order; below `1.0` indicates increasingly poor
+        /// generation quality.
+        public let adequacyRatio: Double?
 
         /// The proportion of predecessor sequences that lead to two or more
         /// distinct possible successors, in `0.0...1.0`.
@@ -27,13 +35,6 @@ extension MarkovChain {
         /// Always `0` for order 0: the zeroth-order chain tracks no predecessor
         /// sequences.
         public let distinctPredecessors: Int
-
-        /// The number of distinct states observed across all training.
-        ///
-        /// This is the global vocabulary size *k* used in the 10·*k*ⁿ adequacy
-        /// heuristic. Identical regardless of which order's `Statistics` you
-        /// inspect.
-        public let distinctStates: Int
 
         /// The maximum number of transitions recorded for any predecessor
         /// sequence.
@@ -52,7 +53,10 @@ extension MarkovChain {
         /// `0` when ``distinctPredecessors`` is `0`.
         public let minimumTransitions: Int
 
-        /// The order these statistics describe.
+        /// The order these metrics describe.
+        ///
+        /// Equal to the index of this value in
+        /// ``MarkovChain/Metrics/orderMetrics``.
         public let order: Int
 
         /// The total number of transitions recorded at this order, summed
@@ -62,16 +66,16 @@ extension MarkovChain {
         // MARK: Internal Initializers
 
         internal init(order: Int,
-                      distinctStates: Int,
+                      adequacyRatio: Double?,
                       distinctPredecessors: Int,
                       totalTransitions: Int,
                       minimumTransitions: Int,
                       maximumTransitions: Int,
                       meanTransitions: Double,
                       branchingRatio: Double) {
+            self.adequacyRatio = adequacyRatio
             self.branchingRatio = branchingRatio
             self.distinctPredecessors = distinctPredecessors
-            self.distinctStates = distinctStates
             self.maximumTransitions = maximumTransitions
             self.meanTransitions = meanTransitions
             self.minimumTransitions = minimumTransitions
@@ -83,5 +87,5 @@ extension MarkovChain {
 
 // MARK: - Sendable
 
-extension MarkovChain.Statistics: Sendable {
+extension MarkovChain.Metrics.OrderMetrics: Sendable {
 }

@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eBardX/XestiTools.git",
       "state" : {
-        "revision" : "b26ea05588e7eda265e91de9f9b8d4127e86952c",
-        "version" : "7.3.0"
+        "revision" : "1c619962cf024f994be792ca81d5e0f947c29039",
+        "version" : "7.4.0"
       }
     },
     {
