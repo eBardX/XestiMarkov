@@ -42,7 +42,7 @@ extension SamplingTests {
 
         let distribution: [(target: MarkovChain<Int>.Transition.Target,
                             weight: Double)] = [(target: .state(1), weight: 0.5),
-                                                (target: .state(2), weight: 0.5),]
+                                                (target: .state(2), weight: 0.5)]
         let result = sample(from: distribution,
                             using: &rng)
 
