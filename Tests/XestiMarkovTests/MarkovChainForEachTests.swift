@@ -131,4 +131,18 @@ extension MarkovChainForEachTests {
         #expect(targets == [.state("a"), .state("b"), .state("b"), .end, .state("a")])
         #expect(weights == [1, 1, 1, 1, 1])
     }
+
+    @Test
+    func forEach_trained() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
+        let analyzer = markovChain.analyzer()
+
+        analyzer.analyze(sequence: ["a", "b", "a"])
+
+        var count = 0
+
+        markovChain.forEach { _ in count += 1 }
+
+        #expect(count > 0) // swiftlint:disable:this empty_count
+    }
 }

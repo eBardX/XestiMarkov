@@ -2,40 +2,6 @@
 
 extension MarkovChain {
 
-    // MARK: Public Instance Properties
-
-    /// A Boolean value indicating whether this Markov chain has no recorded
-    /// transitions.
-    public var isEmpty: Bool {
-        snapshot.accumulator.isEmpty
-    }
-
-    /// The number of distinct states observed during the training of this
-    /// Markov chain.
-    public var stateCount: Int {
-        snapshot.outContextMap.indexToElement.filter {
-            if case .single = $0 {
-                true
-            } else {
-                false
-            }
-        }.count
-    }
-
-    /// The states that have been observed during the training of this Markov
-    /// chain, in ascending order.
-    public var states: [State] {
-        snapshot.outContextMap.indexToElement.compactMap {
-            if case let .single(state) = $0 { state } else { nil }
-        }.sorted()
-    }
-
-    /// The number of unique transitions recorded across all orders for this
-    /// Markov chain.
-    public var transitionCount: Int {
-        snapshot.accumulator.count
-    }
-
     // MARK: Public Instance Methods
 
     /// Calculates the empirical probability of `target` following `source`.

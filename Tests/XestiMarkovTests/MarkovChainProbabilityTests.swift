@@ -3,28 +3,12 @@
 import Testing
 @testable import XestiMarkov
 
-struct MarkovChainIntrospectionTests {
+struct MarkovChainProbabilityTests {
 }
 
 // MARK: -
 
-extension MarkovChainIntrospectionTests {
-    @Test
-    func isEmpty_afterAnalysis() throws {
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        markovChain.analyzer().analyze(sequence: ["a"])
-
-        #expect(!markovChain.isEmpty)
-    }
-
-    @Test
-    func isEmpty_newChain() throws {
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        #expect(markovChain.isEmpty)
-    }
-
+extension MarkovChainProbabilityTests {
     @Test
     func probability_deterministic_begin() throws {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
@@ -134,80 +118,5 @@ extension MarkovChainIntrospectionTests {
 
         #expect(abs(pA - expectedA) < 1e-9)
         #expect(abs(pB - expectedB) < 1e-9)
-    }
-
-    @Test
-    func stateCount_distinctStates() throws {
-        let expectedValue = 3
-
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        markovChain.analyzer().analyze(sequence: ["c", "a", "b", "a"])
-
-        #expect(markovChain.stateCount == expectedValue)
-    }
-
-    @Test
-    func stateCount_empty() throws {
-        let expectedValue = 0
-
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        #expect(markovChain.stateCount == expectedValue)
-    }
-
-    @Test
-    func stateCount_matchesStatesCount() throws {
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        markovChain.analyzer().analyze(sequence: ["c", "a", "b", "a"])
-
-        #expect(markovChain.stateCount == markovChain.states.count)
-    }
-
-    @Test
-    func states_empty() throws {
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        #expect(markovChain.states.isEmpty)
-    }
-
-    @Test
-    func states_noDuplicates() throws {
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        markovChain.analyzer().analyze(sequence: ["a", "a", "a"])
-
-        #expect(markovChain.states == ["a"])
-    }
-
-    @Test
-    func states_sorted() throws {
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        markovChain.analyzer().analyze(sequence: ["c", "a", "b"])
-
-        #expect(markovChain.states == ["a", "b", "c"])
-    }
-
-    @Test
-    func transitionCount_empty() throws {
-        let expectedValue = 0
-
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-
-        #expect(markovChain.transitionCount == expectedValue)
-    }
-
-    @Test
-    func transitionCount_matchesForEach() throws {
-        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
-        var forEachCount = 0
-
-        markovChain.analyzer().analyze(sequence: ["a", "b", "c", "a", "b"])
-
-        markovChain.forEach { _ in forEachCount += 1 }
-
-        #expect(markovChain.transitionCount == forEachCount)
     }
 }

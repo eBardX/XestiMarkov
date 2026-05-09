@@ -20,6 +20,11 @@ extension MarkovChain.Transition {
 extension MarkovChain.Transition.Target: Equatable {
 }
 
+// MARK: - Hashable
+
+extension MarkovChain.Transition.Target: Hashable {
+}
+
 // MARK: - Sendable
 
 extension MarkovChain.Transition.Target: Sendable {

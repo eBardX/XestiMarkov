@@ -13,26 +13,26 @@ internal func makeContext<State>(_ contexts: [Context<State>]) -> Context<State>
                                                                                        State: Comparable,
                                                                                        State: Hashable,
                                                                                        State: Sendable {
-                                                                                           var seq = ContextSequence<State>()
+    var seq = ContextSequence<State>()
 
-                                                                                           for context in contexts {
-                                                                                               seq.append(context: context,
-                                                                                                          limit: contexts.count)
-                                                                                           }
+    for context in contexts {
+        seq.append(context: context,
+                   limit: contexts.count)
+    }
 
-                                                                                           return .sequence(seq)
-                                                                                       }
+    return .sequence(seq)
+}
 
 internal func makeContextSequence<State>(_ contexts: [Context<State>],
                                          limit: Int? = nil) -> ContextSequence<State> where State: Codable,
                                                                                             State: Comparable,
                                                                                             State: Hashable,
                                                                                             State: Sendable {
-                                                                                                contexts.reduce(into: ContextSequence<State>()) {
-                                                                                                    $0.append(context: $1,
-                                                                                                              limit: limit ?? contexts.count)
-                                                                                                }
-                                                                                            }
+    contexts.reduce(into: ContextSequence<State>()) {
+        $0.append(context: $1,
+                  limit: limit ?? contexts.count)
+    }
+}
 
 internal func verifyContextAppend<State>(_ context1: Context<State>,
                                          _ context2: Context<State>,
@@ -41,13 +41,13 @@ internal func verifyContextAppend<State>(_ context1: Context<State>,
                                                                   State: Comparable,
                                                                   State: Hashable,
                                                                   State: Sendable {
-                                                                      var context = context1
+    var context = context1
 
-                                                                      context.append(context: context2,
-                                                                                     limit: limit ?? 100)
+    context.append(context: context2,
+                   limit: limit ?? 100)
 
-                                                                      #expect(context == expectedContext)
-                                                                  }
+    #expect(context == expectedContext)
+}
 
 internal func verifyContextSequenceAppend<State>(_ inContexts: [Context<State>],
                                                  _ context: Context<State>,
@@ -56,10 +56,10 @@ internal func verifyContextSequenceAppend<State>(_ inContexts: [Context<State>],
                                                                           State: Comparable,
                                                                           State: Hashable,
                                                                           State: Sendable {
-                                                                              var seq = makeContextSequence(inContexts, limit: limit)
+    var seq = makeContextSequence(inContexts, limit: limit)
 
-                                                                              seq.append(context: context,
-                                                                                         limit: limit ?? expectedContexts.count)
+    seq.append(context: context,
+               limit: limit ?? expectedContexts.count)
 
-                                                                              #expect(Array(seq) == expectedContexts)
-                                                                          }
+    #expect(Array(seq) == expectedContexts)
+}

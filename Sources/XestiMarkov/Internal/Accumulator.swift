@@ -54,9 +54,9 @@ extension Accumulator {
 
 extension Accumulator: Codable {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
-    public init(from decoder: any Decoder) throws {
+    internal init(from decoder: any Decoder) throws {
         var container = try decoder.unkeyedContainer()
 
         var tmpWeightMap: [Key: UInt] = [:]
@@ -82,9 +82,9 @@ extension Accumulator: Codable {
         self.weightMap = tmpWeightMap
     }
 
-    // MARK: Public Instance Methods
+    // MARK: Internal Instance Methods
 
-    public func encode(to encoder: any Encoder) throws {
+    internal func encode(to encoder: any Encoder) throws {
         var container = encoder.unkeyedContainer()
 
         for (key, value) in weightMap {

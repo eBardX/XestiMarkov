@@ -30,7 +30,7 @@ extension MarkovChain {
         }
     }
 
-    // MARK: Private Nested Types
+    // MARK: Private Type Aliases
 
     private typealias OutPair = (outContext: Context<State>, weight: UInt)
 

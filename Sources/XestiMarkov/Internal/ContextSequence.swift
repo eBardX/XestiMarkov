@@ -7,7 +7,7 @@ internal struct ContextSequence<State>: Sequence where State: Codable,
 
     // MARK: Internal Instance Properties
 
-    private(set) var contexts: [Context<State>]
+    internal private(set) var contexts: [Context<State>]
 
     // MARK: Internal Initializers
 
@@ -19,13 +19,6 @@ internal struct ContextSequence<State>: Sequence where State: Codable,
 // MARK: -
 
 extension ContextSequence {
-
-    // MARK: Internal Instance Methods
-
-    @inlinable
-    func makeIterator() -> IndexingIterator<[Context<State>]> {
-        contexts.makeIterator()
-    }
 
     // MARK: Internal Instance Properties
 
@@ -63,6 +56,11 @@ extension ContextSequence {
         }
     }
 
+    @inlinable
+    internal func makeIterator() -> IndexingIterator<[Context<State>]> {
+        contexts.makeIterator()
+    }
+
     // MARK: Internal Subscripts
 
     @inlinable
@@ -79,8 +77,8 @@ extension ContextSequence: Codable {
 // MARK: - Comparable
 
 extension ContextSequence: Comparable {
-    static func < (lhs: Self,
-                   rhs: Self) -> Bool {
+    internal static func < (lhs: Self,
+                            rhs: Self) -> Bool {
         lhs.contexts.lexicographicallyPrecedes(rhs.contexts)
     }
 }

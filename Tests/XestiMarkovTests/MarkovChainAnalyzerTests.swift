@@ -80,27 +80,6 @@ extension MarkovChainAnalyzerTests {
     }
 
     @Test
-    func analyzeSequences_singleSequence() throws {
-        let sequence = [7, 1, 4, 8, 6, 7, 5, 3, 0, 9,
-                        6, 1, 9, 5, 8, 3, 6, 4, 7, 2,
-                        9, 2, 1, 1, 5, 9, 4, 2]
-        let expectedMarkovChain = try #require(MarkovChain<Int>(maximumOrder: 3))
-
-        expectedMarkovChain.analyzer().analyze(sequence: sequence)
-
-        let expectedSnapshot = expectedMarkovChain.snapshot
-        let actualMarkovChain = try #require(MarkovChain<Int>(maximumOrder: 3))
-
-        actualMarkovChain.analyzer().analyze(sequences: [sequence])
-
-        let actualSnapshot = actualMarkovChain.snapshot
-
-        #expect(actualSnapshot.accumulator.count == expectedSnapshot.accumulator.count)
-        #expect(actualSnapshot.inContextMap.count == expectedSnapshot.inContextMap.count)
-        #expect(actualSnapshot.outContextMap.count == expectedSnapshot.outContextMap.count)
-    }
-
-    @Test
     func analyzeSequences_multipleSequences() throws {
         let sequences: [[String]] = [["this", "is", "a", "test"],
                                      ["this", "is", "only", "a", "test"],
@@ -138,6 +117,27 @@ extension MarkovChainAnalyzerTests {
         concatenatedMarkovChain.analyzer().analyze(sequence: concatenated)
 
         #expect(sequencesMarkovChain.snapshot.accumulator.count != concatenatedMarkovChain.snapshot.accumulator.count)
+    }
+
+    @Test
+    func analyzeSequences_singleSequence() throws {
+        let sequence = [7, 1, 4, 8, 6, 7, 5, 3, 0, 9,
+                        6, 1, 9, 5, 8, 3, 6, 4, 7, 2,
+                        9, 2, 1, 1, 5, 9, 4, 2]
+        let expectedMarkovChain = try #require(MarkovChain<Int>(maximumOrder: 3))
+
+        expectedMarkovChain.analyzer().analyze(sequence: sequence)
+
+        let expectedSnapshot = expectedMarkovChain.snapshot
+        let actualMarkovChain = try #require(MarkovChain<Int>(maximumOrder: 3))
+
+        actualMarkovChain.analyzer().analyze(sequences: [sequence])
+
+        let actualSnapshot = actualMarkovChain.snapshot
+
+        #expect(actualSnapshot.accumulator.count == expectedSnapshot.accumulator.count)
+        #expect(actualSnapshot.inContextMap.count == expectedSnapshot.inContextMap.count)
+        #expect(actualSnapshot.outContextMap.count == expectedSnapshot.outContextMap.count)
     }
 
     @Test

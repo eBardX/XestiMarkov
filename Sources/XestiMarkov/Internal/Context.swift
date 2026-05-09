@@ -112,7 +112,7 @@ extension Context: Codable {
 
     // MARK: Internal Initializers
 
-    init(from decoder: any Decoder) throws {
+    internal init(from decoder: any Decoder) throws {
         do {
             var container = try decoder.unkeyedContainer()
 
@@ -126,7 +126,7 @@ extension Context: Codable {
 
     // MARK: Internal Instance Methods
 
-    func encode(to encoder: any Encoder) throws {
+    internal func encode(to encoder: any Encoder) throws {
         switch self {
         case .begin, .end, .zero:
             var container = encoder.singleValueContainer()
@@ -214,8 +214,8 @@ extension Context: Codable {
 // MARK: - Comparable
 
 extension Context: Comparable {
-    static func < (lhs: Self,
-                   rhs: Self) -> Bool {
+    internal static func < (lhs: Self,
+                            rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.begin, .end),
             (.begin, .sequence),

@@ -26,7 +26,7 @@ internal struct SimpleMarkovChain {
         return nil
     }
 
-    // MARK: Private Nested Types
+    // MARK: Private Type Aliases
 
     private typealias OutGroup = (totalWeight: UInt, outPairs: [OutPair])
     private typealias OutPair  = (outIndex: Int, runWeight: UInt)

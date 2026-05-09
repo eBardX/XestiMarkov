@@ -86,6 +86,40 @@ public final class MarkovChain<State> where State: Codable,
 
 extension MarkovChain {
 
+    // MARK: Public Instance Properties
+
+    /// A Boolean value indicating whether this Markov chain has no recorded
+    /// transitions.
+    public var isEmpty: Bool {
+        snapshot.accumulator.isEmpty
+    }
+
+    /// The number of distinct states observed during the training of this
+    /// Markov chain.
+    public var stateCount: Int {
+        snapshot.outContextMap.indexToElement.filter {
+            if case .single = $0 {
+                true
+            } else {
+                false
+            }
+        }.count
+    }
+
+    /// The states that have been observed during the training of this Markov
+    /// chain, in ascending order.
+    public var states: [State] {
+        snapshot.outContextMap.indexToElement.compactMap {
+            if case let .single(state) = $0 { state } else { nil }
+        }.sorted()
+    }
+
+    /// The number of unique transitions recorded across all orders for this
+    /// Markov chain.
+    public var transitionCount: Int {
+        snapshot.accumulator.count
+    }
+
     // MARK: Public Instance Methods
 
     /// Creates a new analyzer for this Markov chain.
@@ -94,23 +128,6 @@ extension MarkovChain {
     ///             observations into this Markov chain.
     public func analyzer() -> Analyzer {
         Analyzer(markovChain: self)
-    }
-
-    /// Creates a new generator for this Markov chain at the given order.
-    ///
-    /// If `order` is outside the range `0...maximumOrder`, this method returns
-    /// `nil`.
-    ///
-    /// - Parameter order:  The context order to use when selecting the next
-    ///                     state. Defaults to ``defaultMarkovOrder``. Pass zero
-    ///                     for a zeroth-order (frequency-only) generator.
-    ///
-    /// - Returns:  A new ``Generator`` instance seeded with a snapshot of the
-    ///             current state of this Markov chain, or `nil` if `order` is
-    ///             out of range.
-    public func generator(order: Int = defaultMarkovOrder) -> Generator? {
-        Generator(markovChain: self,
-                  order: order)
     }
 
     // MARK: Internal Type Aliases

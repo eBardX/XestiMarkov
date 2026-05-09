@@ -28,19 +28,6 @@ extension MarkovChain.Analyzer {
     /// Analyzes the provided state sequence and records the observed
     /// transitions into the Markov chain.
     ///
-    /// If `states` is empty, this method has no effect.
-    ///
-    /// - Parameter states: The sequence of states to analyze.
-    ///
-    /// - Note: Renamed to ``analyze(sequence:)``.
-    @available(*, deprecated, renamed: "analyze(sequence:)")
-    public func analyze(_ states: [State]) {
-        analyze(sequence: states)
-    }
-
-    /// Analyzes the provided state sequence and records the observed
-    /// transitions into the Markov chain.
-    ///
     /// If `sequence` is empty, this method has no effect.
     ///
     /// - Parameter sequence:   The sequence of states to analyze.

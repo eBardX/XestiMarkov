@@ -4,7 +4,7 @@ internal struct IndexMap<Element> where Element: Codable,
                                         Element: Hashable,
                                         Element: Sendable {
 
-    // MARK: Internal Nested Types
+    // MARK: Internal Type Aliases
 
     internal typealias InsertResult = (inserted: Bool, element: Element, index: Int)
 
