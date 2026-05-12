@@ -95,7 +95,7 @@ extension IndexMapTests {
 
     @Test
     func subscriptElement_found() {
-        let expectedValue: Int = 7
+        let expectedValue = 7
 
         var imap = IndexMap<String>()
 

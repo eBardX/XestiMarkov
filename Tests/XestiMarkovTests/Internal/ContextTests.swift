@@ -311,13 +311,11 @@ extension ContextTests {
 
     @Test
     func codable() throws {
-        let cases: [Context<Int>] = [
-            .begin,
-            .end,
-            .zero,
-            .single(42),
-            makeContext([.begin, .single(1), .single(2)])
-        ]
+        let cases: [Context<Int>] = [.begin,
+                                     .end,
+                                     .zero,
+                                     .single(42),
+                                     makeContext([.begin, .single(1), .single(2)])]
 
         for context in cases {
             let data = try JSONEncoder().encode(context)

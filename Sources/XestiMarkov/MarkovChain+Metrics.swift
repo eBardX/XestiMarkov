@@ -20,10 +20,8 @@ extension MarkovChain {
             }
         }.count
 
-        let distinctInitialStates: Int
-
-        if let beginIndex = ss.inContextMap[.begin] {
-            distinctInitialStates = ss.accumulator.extractElements(for: beginIndex).filter {
+        let distinctInitialStates: Int = if let beginIndex = ss.inContextMap[.begin] {
+            ss.accumulator.extractElements(for: beginIndex).filter {
                 if let outContext = ss.outContextMap[$0.key.outIndex],
                    case .single = outContext {
                     true
@@ -32,15 +30,15 @@ extension MarkovChain {
                 }
             }.count
         } else {
-            distinctInitialStates = 0
+            0
         }
 
         var allOrderMetrics: [Metrics.OrderMetrics] = []
 
         for order in 0...maximumOrder {
-            allOrderMetrics.append(buildOrderMetrics(order: order,
-                                                     distinctStates: distinctStates,
-                                                     snapshot: ss))
+            allOrderMetrics.append(_buildOrderMetrics(order: order,
+                                                      distinctStates: distinctStates,
+                                                      snapshot: ss))
         }
 
         let recommendedOrder = allOrderMetrics.last {
@@ -60,10 +58,13 @@ extension MarkovChain {
 
 // MARK: -
 
-private extension MarkovChain {
-    func buildOrderMetrics(order: Int,
-                           distinctStates: Int,
-                           snapshot ss: Snapshot) -> Metrics.OrderMetrics {
+extension MarkovChain {
+
+    // MARK: Private Instance Methods
+
+    private func _buildOrderMetrics(order: Int,
+                                    distinctStates: Int,
+                                    snapshot ss: Snapshot) -> Metrics.OrderMetrics {
         var predWeights: [Int] = []
         var branchingCount = 0
         var totalTransitions = 0
@@ -89,12 +90,10 @@ private extension MarkovChain {
         }
 
         let kPowN = (0..<order).reduce(1.0) { acc, _ in acc * Double(distinctStates) }
-        let adequacyRatio: Double?
-
-        if order > 0, distinctStates > 0 {
-            adequacyRatio = Double(totalTransitions) / (10.0 * kPowN)
+        let adequacyRatio: Double? = if order > 0, distinctStates > 0 {
+            Double(totalTransitions) / (10.0 * kPowN)
         } else {
-            adequacyRatio = nil
+            nil
         }
 
         guard order != 0,
@@ -108,15 +107,15 @@ private extension MarkovChain {
                                            meanTransitions: 0.0,
                                            branchingRatio: 0.0) }
 
-        let n = predWeights.count
+        let pwtCnt = predWeights.count
 
         return Metrics.OrderMetrics(order: order,
                                     adequacyRatio: adequacyRatio,
-                                    distinctPredecessors: n,
+                                    distinctPredecessors: pwtCnt,
                                     totalTransitions: totalTransitions,
                                     minimumTransitions: predWeights.min() ?? 0,
                                     maximumTransitions: predWeights.max() ?? 0,
-                                    meanTransitions: Double(totalTransitions) / Double(n),
-                                    branchingRatio: Double(branchingCount) / Double(n))
+                                    meanTransitions: Double(totalTransitions) / Double(pwtCnt),
+                                    branchingRatio: Double(branchingCount) / Double(pwtCnt))
     }
 }

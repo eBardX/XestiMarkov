@@ -55,14 +55,13 @@ extension BlendedGenerator {
     }
 
     internal func weights(after source: Source) -> [WeightedTarget] {
-        let context: [State]
-
-        switch source {
-        case .begin, .zero:
-            context = []
+        let context: [State] = switch source {
+        case .begin,
+             .zero:
+            []
 
         case let .states(states):
-            context = states
+            states
         }
 
         var rawWeights = blendWeights(step, context)

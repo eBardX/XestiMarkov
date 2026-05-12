@@ -17,14 +17,14 @@ internal func sample<State: Comparable>(from distribution: [(target: MarkovChain
     let sorted = distribution.sorted {
         switch ($0.target, $1.target) {
         case (.end, .end),
-            (.state, .end):
-            return false
+             (.state, .end):
+            false
 
         case (.end, .state):
-            return true
+            true
 
         case let (.state(lstate), .state(rstate)):
-            return lstate < rstate
+            lstate < rstate
         }
     }
 

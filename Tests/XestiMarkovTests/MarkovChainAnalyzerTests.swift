@@ -25,9 +25,34 @@ extension MarkovChainAnalyzerTests {
 
     @Test
     func analyzeSequence_ints() throws {
-        let states = [7, 1, 4, 8, 6, 7, 5, 3, 0, 9,
-                      6, 1, 9, 5, 8, 3, 6, 4, 7, 2,
-                      9, 2, 1, 1, 5, 9, 4, 2]
+        let states = [7,
+                      1,
+                      4,
+                      8,
+                      6,
+                      7,
+                      5,
+                      3,
+                      0,
+                      9,
+                      6,
+                      1,
+                      9,
+                      5,
+                      8,
+                      3,
+                      6,
+                      4,
+                      7,
+                      2,
+                      9,
+                      2,
+                      1,
+                      1,
+                      5,
+                      9,
+                      4,
+                      2]
         let accExpectedCount = 94
         let ismExpectedCount = 67
         let osmExpectedCount = 11
@@ -46,10 +71,24 @@ extension MarkovChainAnalyzerTests {
 
     @Test
     func analyzeSequence_strings() throws {
-        let states = ["this", "is", "a", "test",
-                      "this", "is", "only", "a", "test",
-                      "if", "this", "had", "been", "the", "real", "deal",
-                      "who", "knows"]
+        let states = ["this",
+                      "is",
+                      "a",
+                      "test",
+                      "this",
+                      "is",
+                      "only",
+                      "a",
+                      "test",
+                      "if",
+                      "this",
+                      "had",
+                      "been",
+                      "the",
+                      "real",
+                      "deal",
+                      "who",
+                      "knows"]
         let accExpectedCount = 30
         let ismExpectedCount = 15
         let osmExpectedCount = 14
@@ -121,9 +160,34 @@ extension MarkovChainAnalyzerTests {
 
     @Test
     func analyzeSequences_singleSequence() throws {
-        let sequence = [7, 1, 4, 8, 6, 7, 5, 3, 0, 9,
-                        6, 1, 9, 5, 8, 3, 6, 4, 7, 2,
-                        9, 2, 1, 1, 5, 9, 4, 2]
+        let sequence = [7,
+                        1,
+                        4,
+                        8,
+                        6,
+                        7,
+                        5,
+                        3,
+                        0,
+                        9,
+                        6,
+                        1,
+                        9,
+                        5,
+                        8,
+                        3,
+                        6,
+                        4,
+                        7,
+                        2,
+                        9,
+                        2,
+                        1,
+                        1,
+                        5,
+                        9,
+                        4,
+                        2]
         let expectedMarkovChain = try #require(MarkovChain<Int>(maximumOrder: 3))
 
         expectedMarkovChain.analyzer().analyze(sequence: sequence)

@@ -90,10 +90,10 @@ extension MarkovChain {
     private func _target(for context: Context<State>) -> Transition.Target? {
         switch context {
         case let .single(state):
-                .state(state)
+            .state(state)
 
         case .end:
-                .end
+            .end
 
         default:
             nil

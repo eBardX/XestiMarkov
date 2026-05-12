@@ -37,11 +37,11 @@ extension ContextSequence {
         let lastContext = contexts.last ?? .zero
 
         switch (lastContext, context) {
-        case (.begin, .begin),
-            (.single, .begin),
-            (.end, _),
-            (_, .sequence),
-            (_, .zero):
+        case (_, .sequence),
+             (_, .zero),
+             (.begin, .begin),
+             (.end, _),
+             (.single, .begin):
             break
 
         case (.zero, _):

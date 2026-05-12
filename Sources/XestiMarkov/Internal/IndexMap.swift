@@ -1,8 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-internal struct IndexMap<Element> where Element: Codable,
-                                        Element: Hashable,
-                                        Element: Sendable {
+internal struct IndexMap<Element: Codable & Hashable & Sendable> {
 
     // MARK: Internal Type Aliases
 
@@ -71,9 +69,9 @@ extension IndexMap {
 
 extension IndexMap: Codable {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
-    public init(from decoder: any Decoder) throws {
+    internal init(from decoder: any Decoder) throws {
         var container = try decoder.unkeyedContainer()
 
         var tmpIndexToElement: [Element] = []
@@ -92,9 +90,9 @@ extension IndexMap: Codable {
         self.indexToElement = tmpIndexToElement
     }
 
-    // MARK: Public Instance Methods
+    // MARK: Internal Instance Methods
 
-    public func encode(to encoder: any Encoder) throws {
+    internal func encode(to encoder: any Encoder) throws {
         var container = encoder.unkeyedContainer()
 
         for element in indexToElement {

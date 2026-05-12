@@ -78,17 +78,15 @@ extension SimpleGenerator {
     }
 
     internal func weights(after source: Source) -> [WeightedTarget] {
-        let context: Context<State>
-
-        switch source {
+        let context: Context<State> = switch source {
         case .begin:
-            context = _context(for: [])
+            _context(for: [])
 
         case let .states(states):
-            context = _context(for: states)
+            _context(for: states)
 
         case .zero:
-            context = .zero
+            .zero
         }
 
         guard let inIndex = inContextMap[context]
@@ -135,7 +133,7 @@ extension SimpleGenerator {
     private mutating func _generate0(upTo limit: Int) -> [State] {
         var states: [State] = []
 
-        for _ in (0..<limit) {
+        for _ in 0..<limit {
             guard let nextContext = _next(after: .zero),
                   case let .single(state) = nextContext
             else { break }
@@ -167,7 +165,7 @@ extension SimpleGenerator {
         var prevContext: Context<State> = .begin
         var states: [State] = []
 
-        for _ in (0..<limit) {
+        for _ in 0..<limit {
             guard prevContext.hasNext,
                   let nextContext = _next(after: prevContext),
                   case let .single(state) = nextContext
