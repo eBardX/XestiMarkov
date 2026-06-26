@@ -48,7 +48,7 @@ extension MarkovChain {
         let blendWeights: @Sendable (Int, [State]) -> [Double] = { _, _ in normalizedWeights }
 
         return BlendedGenerator(sources: sourceGenerators,
-                                blendWeights: blendWeights)!    // swiftlint:disable:this force_unwrapping
+                                blendWeights: blendWeights).require()
     }
 
     /// Creates a generator that blends multiple sources with step-varying
@@ -72,7 +72,7 @@ extension MarkovChain {
                      "sources must not be empty")
 
         return BlendedGenerator(sources: sources,
-                                blendWeights: weights)! // swiftlint:disable:this force_unwrapping
+                                blendWeights: weights).require()
     }
 
     /// Creates a generator that adjusts the probability distribution using a
@@ -145,7 +145,7 @@ extension MarkovChain {
         }
 
         return BlendedGenerator(sources: [from, to],
-                                blendWeights: blendWeights)!    // swiftlint:disable:this force_unwrapping
+                                blendWeights: blendWeights).require()
     }
 
     /// Creates a generator that restarts from the beginning whenever the source
