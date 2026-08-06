@@ -44,17 +44,6 @@ public protocol MarkovChainGenerator<State>: Sendable {
 
     // MARK: Public Instance Methods
 
-    /// Generates a sequence of states up to the given limit.
-    ///
-    /// Generation stops when the chain reaches a terminal state or when `limit`
-    /// states have been produced, whichever comes first. Returns an empty array
-    /// when `limit` is less than or equal to zero.
-    ///
-    /// - Parameter limit:  The maximum number of states to generate.
-    ///
-    /// - Returns:  An array of generated states, possibly shorter than `limit`.
-    mutating func generate(upTo limit: Int) -> [State]
-
     /// Generates a sequence of states until the given predicate returns `true`.
     ///
     /// Generation stops when `predicate` returns `true` or the chain reaches a
@@ -67,6 +56,17 @@ public protocol MarkovChainGenerator<State>: Sendable {
     /// - Returns:  An array of generated states.
     mutating func generate(until predicate: (State) -> Bool) -> [State]
 
+    /// Generates a sequence of states up to the given limit.
+    ///
+    /// Generation stops when the chain reaches a terminal state or when `limit`
+    /// states have been produced, whichever comes first. Returns an empty array
+    /// when `limit` is less than or equal to zero.
+    ///
+    /// - Parameter limit:  The maximum number of states to generate.
+    ///
+    /// - Returns:  An array of generated states, possibly shorter than `limit`.
+    mutating func generate(upTo limit: Int) -> [State]
+
     /// Generates the next state following the given predecessor sequence.
     ///
     /// The `states` parameter represents the most recently generated states.
@@ -76,8 +76,8 @@ public protocol MarkovChainGenerator<State>: Sendable {
     /// Returns `nil` when no transition is recorded for the given context or
     /// when the chain would transition to a terminal state.
     ///
-    /// - Parameter states: The preceding states that form the generation
-    ///                     context.
+    /// - Parameter states:  The preceding states that form the generation
+    ///                      context.
     ///
     /// - Returns:  The next state, or `nil` if generation cannot continue.
     mutating func next(after states: [State]) -> State?
@@ -89,8 +89,8 @@ public protocol MarkovChainGenerator<State>: Sendable {
     /// unnormalized relative weight. An empty array indicates no transitions
     /// are recorded for the given source.
     ///
-    /// - Parameter source: The transition source whose outgoing distribution to
-    ///                     return.
+    /// - Parameter source:  The transition source whose outgoing distribution
+    ///                      to return.
     ///
     /// - Returns:  `(target, weight)` pairs, or `[]` if no transitions exist.
     func weights(after source: Source) -> [WeightedTarget]
@@ -101,24 +101,6 @@ public protocol MarkovChainGenerator<State>: Sendable {
 extension MarkovChainGenerator {
 
     // MARK: Public Instance Methods
-
-    /// Default implementation: tracks the accumulated history and calls
-    /// ``next(after:)`` at each step.
-    public mutating func generate(upTo limit: Int) -> [State] {
-        guard limit > 0
-        else { return [] }
-
-        var history: [State] = []
-
-        for _ in 0..<limit {
-            guard let state = next(after: history)
-            else { break }
-
-            history.append(state)
-        }
-
-        return history
-    }
 
     /// Default implementation: tracks the accumulated history and calls
     /// ``next(after:)`` at each step until `predicate` returns `true`.
@@ -134,6 +116,24 @@ extension MarkovChainGenerator {
             if predicate(state) {
                 break
             }
+        }
+
+        return history
+    }
+
+    /// Default implementation: tracks the accumulated history and calls
+    /// ``next(after:)`` at each step.
+    public mutating func generate(upTo limit: Int) -> [State] {
+        guard limit > 0
+        else { return [] }
+
+        var history: [State] = []
+
+        for _ in 0..<limit {
+            guard let state = next(after: history)
+            else { break }
+
+            history.append(state)
         }
 
         return history

@@ -4,29 +4,12 @@ public import XestiTools
 
 extension MarkovChain {
 
-    // MARK: Public Instance Methods
-
-    /// Creates a new generator for this Markov chain at the given order.
-    ///
-    /// Returns `nil` when `order` is outside `0...maximumOrder`.
-    ///
-    /// - Parameter order:  The context order to use when selecting the next
-    ///                     state. Defaults to ``defaultMarkovOrder``. Pass zero
-    ///                     for a frequency-only generator.
-    ///
-    /// - Returns:  A generator seeded with a snapshot of the current chain
-    ///             state, or `nil` if `order` is out of range.
-    public func generator(order: Int = defaultMarkovOrder) -> (any Generator)? {
-        SimpleGenerator(markovChain: self,
-                        order: order)
-    }
-
     // MARK: Public Type Methods
 
     /// Creates a generator that blends multiple sources at fixed weights.
     ///
     /// At each step the probability distribution is the weighted sum of each
-    /// source's distribution, normalized by the total weight.
+    /// source’s distribution, normalized by the total weight.
     ///
     /// - Parameter sources:    Two or more `(generator, weight)` pairs. Weights
     ///                         are unnormalized positive finite values.
@@ -56,7 +39,7 @@ extension MarkovChain {
     ///
     /// The `weights` closure is called once per step and must return an array
     /// whose length equals `sources.count`. Negative or zero weights for a
-    /// source cause that source's distribution to be excluded at that step.
+    /// source cause that source’s distribution to be excluded at that step.
     ///
     /// - Parameter sources:    The source generators to blend.
     /// - Parameter weights:    A closure that receives the current step index
@@ -157,7 +140,7 @@ extension MarkovChain {
     /// restart is attempted; if the source returns `nil` again, `nil` is
     /// returned.
     ///
-    /// - Parameter source: The underlying generator to loop.
+    /// - Parameter source:  The underlying generator to loop.
     ///
     /// - Returns:  A looping generator.
     public static func generator(looping source: any Generator) -> any Generator {
@@ -186,5 +169,22 @@ extension MarkovChain {
         FallbackGenerator(primary: primary,
                           secondary: secondary,
                           committing: committing)
+    }
+
+    // MARK: Public Instance Methods
+
+    /// Creates a new generator for this Markov chain at the given order.
+    ///
+    /// Returns `nil` when `order` is outside `0...maximumOrder`.
+    ///
+    /// - Parameter order:  The context order to use when selecting the next
+    ///                     state. Defaults to ``defaultMarkovOrder``. Pass zero
+    ///                     for a frequency-only generator.
+    ///
+    /// - Returns:  A generator seeded with a snapshot of the current chain
+    ///             state, or `nil` if `order` is out of range.
+    public func generator(order: Int = defaultMarkovOrder) -> (any Generator)? {
+        SimpleGenerator(markovChain: self,
+                        order: order)
     }
 }

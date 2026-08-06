@@ -345,13 +345,6 @@ extension ContextTests {
     }
 
     @Test
-    func hashable() {
-        let contexts: Set<Context<Int>> = [.begin, .end, .begin, .single(1), .single(1), .zero]
-
-        #expect(contexts.count == 4)
-    }
-
-    @Test
     func hasNext_sequence() {
         let seq0: Context<Int> = makeContext([])
         let seq1: Context<Int> = makeContext([.begin])
@@ -377,5 +370,12 @@ extension ContextTests {
         #expect(!end.hasNext)
         #expect(single.hasNext)
         #expect(zero.hasNext)
+    }
+
+    @Test
+    func hashable() {
+        let contexts: Set<Context<Int>> = [.begin, .end, .begin, .single(1), .single(1), .zero]
+
+        #expect(contexts.count == 4)
     }
 }

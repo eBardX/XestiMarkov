@@ -28,31 +28,6 @@ extension LoopingGenerator {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func generate(upTo limit: Int) -> [State] {
-        guard limit > 0
-        else { return [] }
-
-        var result: [State] = []
-        var history: [State] = []
-
-        while result.count < limit {
-            if let state = source.next(after: history) {
-                result.append(state)
-                history.append(state)
-            } else {
-                history = []
-
-                guard let state = source.next(after: [])
-                else { break }
-
-                result.append(state)
-                history.append(state)
-            }
-        }
-
-        return result
-    }
-
     internal mutating func generate(until predicate: (State) -> Bool) -> [State] {
         var result: [State] = []
         var history: [State] = []
@@ -78,6 +53,31 @@ extension LoopingGenerator {
             }
 
             history.append(state)
+        }
+
+        return result
+    }
+
+    internal mutating func generate(upTo limit: Int) -> [State] {
+        guard limit > 0
+        else { return [] }
+
+        var result: [State] = []
+        var history: [State] = []
+
+        while result.count < limit {
+            if let state = source.next(after: history) {
+                result.append(state)
+                history.append(state)
+            } else {
+                history = []
+
+                guard let state = source.next(after: [])
+                else { break }
+
+                result.append(state)
+                history.append(state)
+            }
         }
 
         return result

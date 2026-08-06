@@ -28,9 +28,9 @@ internal struct SimpleMarkovChain {
 
     // MARK: Private Type Aliases
 
+    private typealias InOutMap = [Int: OutGroup]
     private typealias OutGroup = (totalWeight: UInt, outPairs: [OutPair])
     private typealias OutPair  = (outIndex: Int, runWeight: UInt)
-    private typealias InOutMap = [Int: OutGroup]
 
     // MARK: Private Type Methods
 

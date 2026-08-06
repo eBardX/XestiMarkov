@@ -6,6 +6,15 @@ internal typealias ExtractPair   = Dictionary<Accumulator.Key, UInt>.Element
 internal typealias ExtractResult = [ExtractPair]
 
 // swiftlint:disable:next static_operator
+internal func < (lhs: ExtractPair,
+                 rhs: ExtractPair) -> Bool {
+    guard lhs.key != rhs.key
+    else { return lhs.value < rhs.value }
+
+    return lhs.key < rhs.key
+}
+
+// swiftlint:disable:next static_operator
 internal func == (lhs: ExtractResult,
                   rhs: ExtractResult) -> Bool {
     guard lhs.count == rhs.count
@@ -19,13 +28,4 @@ internal func == (lhs: ExtractResult,
     }
 
     return true
-}
-
-// swiftlint:disable:next static_operator
-internal func < (lhs: ExtractPair,
-                 rhs: ExtractPair) -> Bool {
-    guard lhs.key != rhs.key
-    else { return lhs.value < rhs.value }
-
-    return lhs.key < rhs.key
 }

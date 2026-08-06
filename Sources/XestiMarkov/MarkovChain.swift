@@ -3,10 +3,6 @@
 private import Foundation
 private import XestiTools
 
-/// The default order used when creating a ``MarkovChain`` or
-/// ``MarkovChain/Generator``.
-public let defaultMarkovOrder = 1
-
 /// A Markov chain that models the statistical relationships between sequences
 /// of states.
 ///
@@ -207,3 +203,11 @@ extension MarkovChain: Codable {
 // properties must never be accessed outside of those two locked regions.
 extension MarkovChain: @unchecked Sendable {
 }
+
+// MARK: -
+
+// MARK: Public Constants
+
+/// The default order used when creating a ``MarkovChain`` or
+/// ``MarkovChain/Generator``.
+public let defaultMarkovOrder = 1

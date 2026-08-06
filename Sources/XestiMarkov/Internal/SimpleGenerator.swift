@@ -48,6 +48,14 @@ extension SimpleGenerator {
 
     // MARK: Internal Instance Methods
 
+    internal mutating func generate(until predicate: (State) -> Bool) -> [State] {
+        if order > 0 {
+            _generateN(until: predicate)
+        } else {
+            _generate0(until: predicate)
+        }
+    }
+
     internal mutating func generate(upTo limit: Int) -> [State] {
         guard limit > 0
         else { return [] }
@@ -56,14 +64,6 @@ extension SimpleGenerator {
             _generateN(upTo: limit)
         } else {
             _generate0(upTo: limit)
-        }
-    }
-
-    internal mutating func generate(until predicate: (State) -> Bool) -> [State] {
-        if order > 0 {
-            _generateN(until: predicate)
-        } else {
-            _generate0(until: predicate)
         }
     }
 
@@ -130,20 +130,6 @@ extension SimpleGenerator {
         return context
     }
 
-    private mutating func _generate0(upTo limit: Int) -> [State] {
-        var states: [State] = []
-
-        for _ in 0..<limit {
-            guard let nextContext = _next(after: .zero),
-                  case let .single(state) = nextContext
-            else { break }
-
-            states.append(state)
-        }
-
-        return states
-    }
-
     private mutating func _generate0(until predicate: (State) -> Bool) -> [State] {
         var states: [State] = []
 
@@ -161,20 +147,15 @@ extension SimpleGenerator {
         return states
     }
 
-    private mutating func _generateN(upTo limit: Int) -> [State] {
-        var prevContext: Context<State> = .begin
+    private mutating func _generate0(upTo limit: Int) -> [State] {
         var states: [State] = []
 
         for _ in 0..<limit {
-            guard prevContext.hasNext,
-                  let nextContext = _next(after: prevContext),
+            guard let nextContext = _next(after: .zero),
                   case let .single(state) = nextContext
             else { break }
 
             states.append(state)
-
-            prevContext.append(context: nextContext,
-                               limit: order)
         }
 
         return states
@@ -194,6 +175,25 @@ extension SimpleGenerator {
 
             guard !predicate(state)
             else { break }
+
+            prevContext.append(context: nextContext,
+                               limit: order)
+        }
+
+        return states
+    }
+
+    private mutating func _generateN(upTo limit: Int) -> [State] {
+        var prevContext: Context<State> = .begin
+        var states: [State] = []
+
+        for _ in 0..<limit {
+            guard prevContext.hasNext,
+                  let nextContext = _next(after: prevContext),
+                  case let .single(state) = nextContext
+            else { break }
+
+            states.append(state)
 
             prevContext.append(context: nextContext,
                                limit: order)

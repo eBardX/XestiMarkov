@@ -67,14 +67,11 @@ extension MarkovChain {
 
     private func _source(for context: Context<State>) -> Transition.Source? {
         switch context {
-        case .zero:
-            return .zero
-
         case .begin:
             return .begin
 
-        case let .single(state):
-            return .states([state])
+        case .end:
+            return nil
 
         case let .sequence(seq):
             let states = seq.compactMap {
@@ -82,18 +79,21 @@ extension MarkovChain {
             }
             return states.isEmpty ? nil : .states(states)
 
-        case .end:
-            return nil
+        case let .single(state):
+            return .states([state])
+
+        case .zero:
+            return .zero
         }
     }
 
     private func _target(for context: Context<State>) -> Transition.Target? {
         switch context {
-        case let .single(state):
-            .state(state)
-
         case .end:
             .end
+
+        case let .single(state):
+            .state(state)
 
         default:
             nil

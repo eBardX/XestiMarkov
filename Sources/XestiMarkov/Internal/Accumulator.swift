@@ -34,6 +34,10 @@ extension Accumulator {
 
     // MARK: Internal Instance Methods
 
+    internal func extractElements(for inIndex: Int) -> [Dictionary<Key, UInt>.Element] {
+        Array(inIndexMap[inIndex, default: [:]])
+    }
+
     internal mutating func increment(inIndex: Int,
                                      outIndex: Int,
                                      by weight: UInt = 1) {
@@ -43,10 +47,6 @@ extension Accumulator {
 
         inIndexMap[inIndex, default: [:]][key] = newWeight
         weightMap[key] = newWeight
-    }
-
-    internal func extractElements(for inIndex: Int) -> [Dictionary<Key, UInt>.Element] {
-        Array(inIndexMap[inIndex, default: [:]])
     }
 }
 

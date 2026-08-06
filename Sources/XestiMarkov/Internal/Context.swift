@@ -32,18 +32,18 @@ extension Context {
 
     internal var order: Int? {
         switch self {
-        case .zero:
-            0
-
         case .begin,
              .single:
             1
 
+        case .end:
+            nil
+
         case let .sequence(seq):
             seq.count
 
-        case .end:
-            nil
+        case .zero:
+            0
         }
     }
 
