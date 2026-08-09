@@ -1,19 +1,19 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-internal struct ContextSequence<State>: Sequence where State: Codable,
-                                                       State: Comparable,
-                                                       State: Hashable,
-                                                       State: Sendable {
-
-    // MARK: Internal Instance Properties
-
-    internal private(set) var contexts: [Context<State>]
+internal struct ContextSequence<State> where State: Codable,
+                                             State: Comparable,
+                                             State: Hashable,
+                                             State: Sendable {
 
     // MARK: Internal Initializers
 
     internal init() {
         self.contexts = []
     }
+
+    // MARK: Internal Instance Properties
+
+    internal private(set) var contexts: [Context<State>]
 }
 
 // MARK: -
@@ -91,4 +91,9 @@ extension ContextSequence: Hashable {
 // MARK: - Sendable
 
 extension ContextSequence: Sendable {
+}
+
+// MARK: - Sequence
+
+extension ContextSequence: Sequence {
 }

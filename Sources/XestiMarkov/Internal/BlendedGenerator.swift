@@ -5,12 +5,6 @@ internal struct BlendedGenerator<State> where State: Codable,
                                               State: Hashable,
                                               State: Sendable {
 
-    // MARK: Internal Type Aliases
-
-    internal typealias Source = MarkovChain<State>.Transition.Source
-    internal typealias Target = MarkovChain<State>.Transition.Target
-    internal typealias WeightedTarget = (target: Target, weight: Double)
-
     // MARK: Internal Initializers
 
     internal init?(sources: [any MarkovChain<State>.Generator],
@@ -37,6 +31,12 @@ internal struct BlendedGenerator<State> where State: Codable,
 // MARK: -
 
 extension BlendedGenerator {
+
+    // MARK: Internal Type Aliases
+
+    internal typealias Source = MarkovChain<State>.Transition.Source
+    internal typealias Target = MarkovChain<State>.Transition.Target
+    internal typealias WeightedTarget = (target: Target, weight: Double)
 
     // MARK: Internal Instance Methods
 

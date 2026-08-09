@@ -326,6 +326,24 @@ extension ContextTests {
     }
 
     @Test
+    func codable_invalidDiscriminator_singleValueContainer() throws {
+        let data = Data("\"bogus\"".utf8)
+
+        #expect(throws: DecodingError.self) {
+            try JSONDecoder().decode(Context<Int>.self, from: data)
+        }
+    }
+
+    @Test
+    func codable_invalidDiscriminator_unkeyedContainer() throws {
+        let data = Data("[\"bogus\"]".utf8)
+
+        #expect(throws: DecodingError.self) {
+            try JSONDecoder().decode(Context<Int>.self, from: data)
+        }
+    }
+
+    @Test
     func comparable() {
         let zero: Context<Int> = .zero
         let begin: Context<Int> = .begin

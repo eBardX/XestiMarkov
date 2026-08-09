@@ -5,12 +5,6 @@ internal struct FilterGenerator<State> where State: Codable,
                                              State: Hashable,
                                              State: Sendable {
 
-    // MARK: Internal Type Aliases
-
-    internal typealias Source = MarkovChain<State>.Transition.Source
-    internal typealias Target = MarkovChain<State>.Transition.Target
-    internal typealias WeightedTarget = (target: Target, weight: Double)
-
     // MARK: Internal Initializers
 
     internal init(source: any MarkovChain<State>.Generator,
@@ -32,6 +26,12 @@ internal struct FilterGenerator<State> where State: Codable,
 // MARK: -
 
 extension FilterGenerator {
+
+    // MARK: Internal Type Aliases
+
+    internal typealias Source = MarkovChain<State>.Transition.Source
+    internal typealias Target = MarkovChain<State>.Transition.Target
+    internal typealias WeightedTarget = (target: Target, weight: Double)
 
     // MARK: Internal Instance Methods
 

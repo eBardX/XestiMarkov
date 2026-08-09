@@ -1,6 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-internal struct AnyRandomNumberGenerator: RandomNumberGenerator {
+internal struct AnyRandomNumberGenerator {
 
     // MARK: Internal Initializers
 
@@ -12,6 +12,11 @@ internal struct AnyRandomNumberGenerator: RandomNumberGenerator {
     // MARK: Internal Instance Properties
 
     @usableFromInline internal var rng: any (RandomNumberGenerator & Sendable)
+}
+
+// MARK: -
+
+extension AnyRandomNumberGenerator {
 
     // MARK: Internal Instance Methods
 
@@ -19,6 +24,11 @@ internal struct AnyRandomNumberGenerator: RandomNumberGenerator {
     internal mutating func next() -> UInt64 {
         rng.next()
     }
+}
+
+// MARK: - RandomNumberGenerator
+
+extension AnyRandomNumberGenerator: RandomNumberGenerator {
 }
 
 // MARK: - Sendable

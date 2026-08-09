@@ -4,7 +4,7 @@ extension Accumulator {
 
     // MARK: Internal Nested Types
 
-    internal struct Key: Hashable {
+    internal struct Key {
 
         // MARK: Internal Instance Properties
 
@@ -20,6 +20,11 @@ extension Accumulator.Key: Comparable {
                             rhs: Self) -> Bool {
         (lhs.inIndex, lhs.outIndex) < (rhs.inIndex, rhs.outIndex)
     }
+}
+
+// MARK: - Hashable
+
+extension Accumulator.Key: Hashable {
 }
 
 // MARK: - Sendable

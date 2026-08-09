@@ -2,10 +2,6 @@
 
 internal struct IndexMap<Element: Codable & Hashable & Sendable> {
 
-    // MARK: Internal Type Aliases
-
-    internal typealias InsertResult = (inserted: Bool, element: Element, index: Int)
-
     // MARK: Internal Initializers
 
     internal init() {
@@ -22,6 +18,10 @@ internal struct IndexMap<Element: Codable & Hashable & Sendable> {
 // MARK: -
 
 extension IndexMap {
+
+    // MARK: Internal Type Aliases
+
+    internal typealias InsertResult = (inserted: Bool, element: Element, index: Int)
 
     // MARK: Internal Instance Properties
 

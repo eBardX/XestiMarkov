@@ -10,6 +10,17 @@ internal struct SimpleMarkovChain {
         self.rng = rng
     }
 
+    // MARK: Private Instance Properties
+
+    private let inOutMap: InOutMap
+
+    private var rng: AnyRandomNumberGenerator
+}
+
+// MARK: -
+
+extension SimpleMarkovChain {
+
     // MARK: Internal Instance Methods
 
     internal mutating func next(after inIndex: Int) -> Int? {
@@ -57,10 +68,4 @@ internal struct SimpleMarkovChain {
 
         return inOutMap
     }
-
-    // MARK: Private Instance Properties
-
-    private let inOutMap: InOutMap
-
-    private var rng: AnyRandomNumberGenerator
 }

@@ -92,6 +92,22 @@ extension MarkovChainMetricsTests {
     }
 
     @Test
+    func metrics_recommendedOrder_multipleAdequate_choosesHighest() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+        let sequence = (0..<100).flatMap { _ in ["a", "b"] }
+
+        markovChain.analyzer().analyze(sequence: sequence)
+
+        let metrics = markovChain.metrics()
+
+        // Both order 1 and order 2 are adequately trained here; recommendedOrder
+        // must pick the highest of the two, not merely the first adequate one.
+        #expect(metrics.orderMetrics[1].adequacyRatio.map { $0 >= 1.0 } == true)
+        #expect(metrics.orderMetrics[2].adequacyRatio.map { $0 >= 1.0 } == true)
+        #expect(metrics.recommendedOrder == 2)
+    }
+
+    @Test
     func metrics_recommendedOrder_noneAdequate() throws {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
 
