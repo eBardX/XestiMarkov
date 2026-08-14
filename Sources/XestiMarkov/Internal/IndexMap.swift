@@ -33,6 +33,19 @@ extension IndexMap {
         indexToElement.isEmpty
     }
 
+    // MARK: Internal Instance Subscripts
+
+    internal subscript(element: Element) -> Int? {
+        elementToIndex[element]
+    }
+
+    internal subscript(index: Int) -> Element? {
+        guard (0..<indexToElement.count) ~= index
+        else { return nil }
+
+        return indexToElement[index]
+    }
+
     // MARK: Internal Instance Methods
 
     @discardableResult
@@ -49,19 +62,6 @@ extension IndexMap {
                               at: index)
 
         return (true, element, index)
-    }
-
-    // MARK: Internal Subscripts
-
-    internal subscript(element: Element) -> Int? {
-        elementToIndex[element]
-    }
-
-    internal subscript(index: Int) -> Element? {
-        guard (0..<indexToElement.count) ~= index
-        else { return nil }
-
-        return indexToElement[index]
     }
 }
 

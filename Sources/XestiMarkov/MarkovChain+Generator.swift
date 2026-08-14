@@ -159,7 +159,7 @@ extension MarkovChain {
     /// - Parameter primary:        The preferred generator.
     /// - Parameter secondary:      The generator used when the primary yields
     ///                             nothing.
-    /// - Parameter  committing:    When `true`, the first fallback is
+    /// - Parameter committing:     When `true`, the first fallback is
     ///                             permanent. Defaults to `false`.
     ///
     /// - Returns:  A fallback generator.

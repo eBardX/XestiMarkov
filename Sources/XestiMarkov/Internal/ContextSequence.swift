@@ -30,6 +30,13 @@ extension ContextSequence {
         contexts.last
     }
 
+    // MARK: Internal Instance Subscripts
+
+    @inlinable
+    internal subscript(index: Int) -> Context<State> {
+        contexts[index]
+    }
+
     // MARK: Internal Instance Methods
 
     internal mutating func append(context: Context<State>,
@@ -59,13 +66,6 @@ extension ContextSequence {
     @inlinable
     internal func makeIterator() -> IndexingIterator<[Context<State>]> {
         contexts.makeIterator()
-    }
-
-    // MARK: Internal Subscripts
-
-    @inlinable
-    internal subscript(index: Int) -> Context<State> {
-        contexts[index]
     }
 }
 
