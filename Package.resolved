@@ -1,13 +1,13 @@
 {
-  "originHash" : "e62cfdf980a6aed55d743184d1e705518c7bb77572d7b066ea9c952b3758d882",
+  "originHash" : "db186a63ba61df39afa1cabba2e692c17d0e38be4a1ed1a3ebe6056eba9d302b",
   "pins" : [
     {
       "identity" : "xestitools",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eBardX/XestiTools.git",
       "state" : {
-        "revision" : "05991497b8c7cb5ccfd4c9440c5b8548f6989ab3",
-        "version" : "9.1.0"
+        "revision" : "35a4c43dde224aadcadad66dac7a35104537694d",
+        "version" : "10.0.0"
       }
     }
   ],
