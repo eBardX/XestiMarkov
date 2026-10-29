@@ -5,6 +5,14 @@
 internal typealias ExtractPair   = Dictionary<Accumulator.Key, UInt>.Element
 internal typealias ExtractResult = [ExtractPair]
 
+internal struct TestError {
+}
+
+// MARK: - Error
+
+extension TestError: Error {
+}
+
 // swiftlint:disable:next static_operator
 internal func < (lhs: ExtractPair,
                  rhs: ExtractPair) -> Bool {

@@ -60,7 +60,8 @@ extension BlendedGenerator {
              .zero:
             []
 
-        case let .states(states):
+        case let .beginStates(states),
+             let .states(states):
             states
         }
 
@@ -72,11 +73,23 @@ extension BlendedGenerator {
         var distributions: [[WeightedTarget]] = []
 
         for i in sources.indices {
+            //
+            // Normalize each source’s distribution to sum to 1, so that its
+            // influence is its blend weight alone, whatever the scale of the
+            // weights it returns (raw counts, probabilities, …):
+            //
             let dist = sources[i].weights(after: source)
+            let total = dist.reduce(0.0) { $0 + $1.weight }
 
-            distributions.append(dist)
+            if total > 0 {
+                distributions.append(dist.map { (target: $0.target,
+                                                 weight: $0.weight / total)
+                })
+            } else {
+                distributions.append([])
+            }
 
-            if dist.isEmpty {
+            if distributions[i].isEmpty || !rawWeights[i].isFinite || rawWeights[i] < 0 {
                 rawWeights[i] = 0.0
             }
         }
@@ -102,9 +115,9 @@ extension BlendedGenerator {
             }
         }
 
-        return combined.map { (target: $0.key,
-                               weight: $0.value)
-        }
+        return sortByTarget(combined.map { (target: $0.key,
+                                            weight: $0.value)
+        })
     }
 }
 

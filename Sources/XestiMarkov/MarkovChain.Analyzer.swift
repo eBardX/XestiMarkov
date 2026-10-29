@@ -88,10 +88,9 @@ extension MarkovChain.Analyzer {
                   order <= markovChain.maximumOrder
             else { continue }
 
-            for _ in 0..<weight {
-                markovChain.increment(inContext: inContext,
-                                      outContext: outContext)
-            }
+            markovChain.increment(inContext: inContext,
+                                  outContext: outContext,
+                                  by: weight)
         }
     }
 

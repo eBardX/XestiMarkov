@@ -11,6 +11,25 @@ struct MarkovChainForEachTests {
 
 extension MarkovChainForEachTests {
     @Test
+    func forEach_anchoredSourcesHaveCorrectOrder() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 3))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c", "d"])
+
+        var anchored: [MarkovChain<String>.Transition] = []
+
+        markovChain.forEach { transition in
+            if case .beginStates = transition.source {
+                anchored.append(transition)
+            }
+        }
+
+        #expect(anchored.map(\.source) == [.beginStates(["a"]), .beginStates(["a", "b"])])
+        #expect(anchored.map(\.source.order) == [2, 3])
+        #expect(anchored.map(\.target) == [.state("b"), .state("c")])
+    }
+
+    @Test
     func forEach_empty() throws {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
         var count = 0
@@ -37,7 +56,7 @@ extension MarkovChainForEachTests {
             weights.append(transition.weight)
         }
 
-        #expect(sources == [.zero, .zero, .begin, .states(["a"]), .states(["b"]), .states(["a"]), .states(["a", "b"])])
+        #expect(sources == [.zero, .zero, .begin, .states(["a"]), .states(["b"]), .beginStates(["a"]), .states(["a", "b"])])
         #expect(targets == [.state("a"), .state("b"), .state("a"), .state("b"), .end, .state("b"), .end])
         #expect(weights == [1, 1, 1, 1, 1, 1, 1])
     }

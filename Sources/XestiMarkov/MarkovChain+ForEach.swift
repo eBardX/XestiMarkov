@@ -20,9 +20,9 @@ extension MarkovChain {
                                              accumulator: ss.accumulator)
 
             for pair in pairs {
-                guard let transition = _makeTransition(inContext: inContext,
-                                                       outContext: pair.outContext,
-                                                       weight: pair.weight)
+                guard let transition = makeTransition(inContext: inContext,
+                                                      outContext: pair.outContext,
+                                                      weight: pair.weight)
                 else { continue }
 
                 body(transition)
@@ -30,13 +30,9 @@ extension MarkovChain {
         }
     }
 
-    // MARK: Private Type Aliases
+    // MARK: Internal Instance Methods
 
-    private typealias OutPair = (outContext: Context<State>, weight: UInt)
-
-    // MARK: Private Instance Methods
-
-    private func _makeTransition(inContext: Context<State>,
+    internal func makeTransition(inContext: Context<State>,
                                  outContext: Context<State>,
                                  weight: UInt) -> Transition? {
         guard let source = _source(for: inContext),
@@ -47,6 +43,12 @@ extension MarkovChain {
                           target: target,
                           weight: weight)
     }
+
+    // MARK: Private Type Aliases
+
+    private typealias OutPair = (outContext: Context<State>, weight: UInt)
+
+    // MARK: Private Instance Methods
 
     private func _possibleOutContexts(after inContext: Context<State>,
                                       inContextMap: IndexMap<Context<State>>,
@@ -77,7 +79,11 @@ extension MarkovChain {
             let states = seq.compactMap {
                 if case let .single(s) = $0 { s } else { nil }
             }
-            return states.isEmpty ? nil : .states(states)
+
+            guard !states.isEmpty
+            else { return nil }
+
+            return seq.contexts.first == .begin ? .beginStates(states) : .states(states)
 
         case let .single(state):
             return .states([state])

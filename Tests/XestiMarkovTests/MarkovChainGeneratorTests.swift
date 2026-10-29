@@ -1,5 +1,7 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
+// swiftlint:disable file_length
+
 import Testing
 @testable import XestiMarkov
 import XestiTools
@@ -10,6 +12,83 @@ struct MarkovChainGeneratorTests {
 // MARK: -
 
 extension MarkovChainGeneratorTests {
+    @Test
+    func generate_continuing_anchored_shortSeedIsOpening() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c", "d"])
+
+        var generator = try #require(markovChain.generator(order: 2))
+
+        // An anchored generator treats a short seed as an opening: [begin, c]
+        // was never observed.
+        #expect(generator.generate(continuing: ["c"], upTo: 5).isEmpty)
+        #expect(generator.generate(continuing: ["a"], upTo: 5) == ["b", "c", "d"])
+    }
+
+    @Test
+    func generate_continuing_excludesSeed() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c", "d"])
+
+        var generator = try #require(markovChain.generator(order: 2))
+
+        #expect(generator.generate(continuing: ["b", "c"], upTo: 5) == ["d"])
+        #expect(generator.generate(continuing: ["a", "b"]) { $0 == "c" } == ["c"])
+    }
+
+    @Test
+    func generate_continuing_unanchored_shortSeedUsesShorterContext() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c", "d"])
+
+        var generator = try #require(markovChain.generator(order: 2,
+                                                           startsAtBegin: false))
+
+        #expect(generator.generate(continuing: ["c"], upTo: 5) == ["d"])
+    }
+
+    @Test
+    func generate_continuing_wrapper_limitZero() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c"])
+
+        let source = try #require(markovChain.generator(order: 1))
+
+        var generator = MarkovChain<String>.generator(filtering: source) { _ in true }
+
+        #expect(generator.generate(continuing: ["a"], upTo: 0).isEmpty)
+    }
+
+    @Test
+    func generate_continuing_wrapper_untilStopsAtTerminal() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c"])
+
+        let source = try #require(markovChain.generator(order: 1))
+
+        var generator = MarkovChain<String>.generator(filtering: source) { _ in true }
+
+        #expect(generator.generate(continuing: ["a"]) { _ in false } == ["b", "c"])
+    }
+
+    @Test
+    func generate_continuing_wrapper_usesDefault() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c"])
+
+        let source = try #require(markovChain.generator(order: 1))
+
+        var generator = MarkovChain<String>.generator(filtering: source) { _ in true }
+
+        #expect(generator.generate(continuing: ["b"], upTo: 5) == ["c"])
+    }
+
     @Test
     func generate_emptyModel() throws {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
@@ -104,6 +183,114 @@ extension MarkovChainGeneratorTests {
         var generator = try #require(markovChain.generator(order: 2))
 
         #expect(generator.generate(upTo: 10).count == 3)
+    }
+
+    @Test
+    func generate_seeded_isReproducible() throws {
+        let markovChain = try #require(MarkovChain<Int>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequences: [[1, 2, 3, 1, 3, 2, 1],
+                                                   [2, 2, 1, 3, 3, 1, 2],
+                                                   [3, 1, 1, 2, 3, 2, 2]])
+
+        var gen1 = try makeSeededGeneratorStack(markovChain,
+                                                seed: 42)
+        var gen2 = try makeSeededGeneratorStack(markovChain,
+                                                seed: 42)
+        var gen3 = try makeSeededGeneratorStack(markovChain,
+                                                seed: 43)
+
+        let result1 = gen1.generate(upTo: 200)
+        let result2 = gen2.generate(upTo: 200)
+        let result3 = gen3.generate(upTo: 200)
+
+        #expect(result1.count == 200)
+        #expect(result1 == result2)
+        #expect(result1 != result3)
+    }
+
+    @Test
+    func generate_seeded_simple_isReproducible() throws {
+        let markovChain = try #require(MarkovChain<Int>(maximumOrder: 1))
+
+        markovChain.analyzer().analyze(sequence: [1, 2, 3, 1, 3, 2, 1, 1, 2, 2, 3, 3])
+
+        var gen1 = try #require(markovChain.generator(stopsAtEnd: false,
+                                                      using: SeededRandomNumberGenerator(seed: 7)))
+        var gen2 = try #require(markovChain.generator(stopsAtEnd: false,
+                                                      using: SeededRandomNumberGenerator(seed: 7)))
+
+        #expect(gen1.generate(upTo: 100) == gen2.generate(upTo: 100))
+    }
+
+    @Test
+    func generate_startsAtBegin_false_firstStateByFrequency() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c"])
+
+        var firstStates: Set<String> = []
+
+        for seed in UInt64(0)..<50 {
+            var generator = try #require(markovChain.generator(order: 2,
+                                                               startsAtBegin: false,
+                                                               using: SeededRandomNumberGenerator(seed: seed)))
+
+            let states = generator.generate(upTo: 10)
+
+            try firstStates.insert(#require(states.first))
+
+            // Each run continues the source from wherever it started.
+            #expect(["a", "b", "c"].suffix(states.count) == ArraySlice(states))
+        }
+
+        #expect(firstStates == ["a", "b", "c"])
+    }
+
+    @Test
+    func generate_startsAtBegin_true_alwaysOpensLikeSource() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c"])
+
+        for seed in UInt64(0)..<20 {
+            var generator = try #require(markovChain.generator(order: 2,
+                                                               using: SeededRandomNumberGenerator(seed: seed)))
+
+            #expect(generator.generate(upTo: 10) == ["a", "b", "c"])
+        }
+    }
+
+    @Test
+    func generate_stopsAtEnd_false_reachesLimit() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b"])
+
+        var stopping = try #require(markovChain.generator(order: 2))
+        var endless = try #require(markovChain.generator(order: 2,
+                                                         stopsAtEnd: false))
+
+        #expect(stopping.generate(upTo: 10) == ["a", "b"])
+
+        let states = endless.generate(upTo: 10)
+
+        #expect(states.count == 10)
+        #expect(Array(states.prefix(2)) == ["a", "b"])
+    }
+
+    @Test
+    func generate_stopsAtEnd_false_untilStillStops() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b"])
+
+        var generator = try #require(markovChain.generator(stopsAtEnd: false,
+                                                           using: SeededRandomNumberGenerator(seed: 1)))
+
+        let states = generator.generate { $0 == "b" }
+
+        #expect(states.last == "b")
     }
 
     @Test
@@ -331,6 +518,24 @@ extension MarkovChainGeneratorTests {
     }
 
     @Test
+    func generator_fallback_backsOffToLowerOrder() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequences: [["a", "b", "c"], ["x", "b", "d"]])
+
+        let order2 = try #require(markovChain.generator(order: 2))
+        let order1 = try #require(markovChain.generator(order: 1,
+                                                        using: SeededRandomNumberGenerator(seed: 3)))
+
+        var gen = MarkovChain<String>.generator(trying: order2, otherwise: order1)
+
+        // [q, b] was never observed at order 2; order 1 continues after "b".
+        let next = gen.next(after: ["q", "b"])
+
+        #expect(next == "c" || next == "d")
+    }
+
+    @Test
     func generator_fallback_bothFailReturnsNil() throws {
         let empty1 = try #require(MarkovChain<String>(maximumOrder: 1))
         let empty2 = try #require(MarkovChain<String>(maximumOrder: 1))
@@ -412,7 +617,7 @@ extension MarkovChainGeneratorTests {
 
         let chainS = try #require(MarkovChain<String>(maximumOrder: 1))
 
-        chainS.analyzer().analyze(sequence: ["x"])
+        chainS.analyzer().analyze(sequence: ["a", "x"])
 
         let p = try #require(chainP.generator(order: 1))
         let s = try #require(chainS.generator(order: 1))
@@ -420,7 +625,7 @@ extension MarkovChainGeneratorTests {
         var gen = MarkovChain<String>.generator(trying: p, otherwise: s)
 
         #expect(gen.next(after: []) == "a")
-        #expect(gen.next(after: ["a"]) == "x")  // primary terminates; fallback continues
+        #expect(gen.next(after: ["a"]) == "x")  // primary terminates; fallback continues after "a"
     }
 
     @Test
@@ -525,7 +730,7 @@ extension MarkovChainGeneratorTests {
         var gen = MarkovChain<String>.generator(interpolating: from,
                                                 to: to,
                                                 over: 1,
-                                                using: LinearInterpolator())
+                                                along: LinearInterpolator())
 
         // Step 0: t = 0/1 = 0.0 → w = 0.0 → 100% from → "a"
         let step0 = gen.next(after: [])
@@ -554,7 +759,7 @@ extension MarkovChainGeneratorTests {
         var gen = MarkovChain<String>.generator(interpolating: from,
                                                 to: to,
                                                 over: 100,
-                                                using: ConstantInterpolator())
+                                                along: ConstantInterpolator())
 
         let result = gen.generate(upTo: 10)
 
@@ -690,4 +895,51 @@ extension MarkovChainGeneratorTests {
         // Order 0 ignores states; result depends only on frequency
         #expect(generator.next(after: ["z"]) == "a")
     }
+
+    @Test
+    func next_startsAtBegin_false_shortHistoryUnanchored() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b", "c"])
+
+        var anchored = try #require(markovChain.generator(order: 2))
+        var unanchored = try #require(markovChain.generator(order: 2,
+                                                            startsAtBegin: false))
+
+        #expect(anchored.next(after: ["b"]) == nil)     // [begin, b] never observed
+        #expect(unanchored.next(after: ["b"]) == "c")   // [b] → c
+    }
+
+    @Test
+    func weights_stopsAtEnd_false_backsOffWhenOnlyEnd() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        markovChain.analyzer().analyze(sequence: ["a", "b"])
+
+        let endless = try #require(markovChain.generator(order: 1,
+                                                         stopsAtEnd: false))
+
+        // "b" → .end only, so it backs off to the order-0 counts.
+        let weights = endless.weights(after: .states(["b"]))
+
+        #expect(weights.map(\.target) == [.state("a"), .state("b")])
+        #expect(weights.map(\.weight) == [1, 1])
+    }
+
+    @Test
+    func weights_stopsAtEnd_false_excludesEnd() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        markovChain.analyzer().analyze(sequences: [["a", "b"], ["b", "a", "b"]])
+
+        let stopping = try #require(markovChain.generator(order: 1))
+        let endless = try #require(markovChain.generator(order: 1,
+                                                         stopsAtEnd: false))
+
+        // "b" → .end ×2, "a" ×1
+        #expect(stopping.weights(after: .states(["b"])).map(\.target) == [.end, .state("a")])
+        #expect(endless.weights(after: .states(["b"])).map(\.target) == [.state("a")])
+    }
 }
+
+// swiftlint:enable file_length

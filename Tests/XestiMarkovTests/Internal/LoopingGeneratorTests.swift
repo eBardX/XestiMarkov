@@ -72,6 +72,20 @@ extension LoopingGeneratorTests {
     }
 
     @Test
+    func next_knownContext_returnsSourceState() throws {
+        let chain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        chain.analyzer().analyze(sequence: ["a", "b"])
+
+        let source: any MarkovChain<String>.Generator = try #require(SimpleGenerator(markovChain: chain,
+                                                                                     order: 1))
+
+        var gen = LoopingGenerator(source: source)
+
+        #expect(gen.next(after: ["a"]) == "b")
+    }
+
+    @Test
     func next_loopsOnNil() throws {
         let chain = try #require(MarkovChain<String>(maximumOrder: 1))
 

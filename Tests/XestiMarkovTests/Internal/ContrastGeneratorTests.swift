@@ -86,6 +86,39 @@ extension ContrastGeneratorTests {
     }
 
     @Test
+    func next_unknownContext_returnsNil() throws {
+        let mc = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        mc.analyzer().analyze(sequence: ["a", "b"])
+
+        let source: any MarkovChain<String>.Generator = try #require(SimpleGenerator(markovChain: mc,
+                                                                                     order: 1))
+
+        var gen = ContrastGenerator(source: source,
+                                    contrast: 2.0)
+
+        #expect(gen.next(after: ["z"]) == nil)
+    }
+
+    @Test
+    func weights_anyContrast_sumsToOne() throws {
+        let mc = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        mc.analyzer().analyze(sequences: [["a"], ["a"], ["a"], ["b"]])
+
+        let source: any MarkovChain<String>.Generator = try #require(SimpleGenerator(markovChain: mc,
+                                                                                     order: 1))
+
+        for contrast in [0.25, 0.5, 2.0, 4.0] {
+            let gen = ContrastGenerator(source: source,
+                                        contrast: contrast)
+            let total = gen.weights(after: .begin).reduce(0.0) { $0 + $1.weight }
+
+            #expect(abs(total - 1.0) < 1e-9)
+        }
+    }
+
+    @Test
     func weights_highContrast_sharpensDistribution() throws {
         let mc = try #require(MarkovChain<String>(maximumOrder: 1))
 
@@ -146,5 +179,19 @@ extension ContrastGeneratorTests {
         // With contrast 1.0, normalised probs are raised to 1/1 = 1 → unchanged.
         // a:b should be 0.75:0.25 = 3:1.
         #expect(abs(aWeight / bWeight - 3.0) < 1e-9)
+    }
+
+    @Test
+    func weights_unknownContext_returnsEmpty() throws {
+        let mc = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        mc.analyzer().analyze(sequence: ["a", "b"])
+
+        let source: any MarkovChain<String>.Generator = try #require(SimpleGenerator(markovChain: mc,
+                                                                                     order: 1))
+        let gen = ContrastGenerator(source: source,
+                                    contrast: 2.0)
+
+        #expect(gen.weights(after: .states(["z"])).isEmpty)
     }
 }

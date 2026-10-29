@@ -54,11 +54,6 @@ extension MarkovChain {
                        recommendedOrder: recommendedOrder,
                        orderMetrics: allOrderMetrics)
     }
-}
-
-// MARK: -
-
-extension MarkovChain {
 
     // MARK: Private Instance Methods
 

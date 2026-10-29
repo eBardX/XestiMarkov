@@ -64,10 +64,22 @@ extension ContrastGenerator {
         else { return [] }
 
         let exponent = contrast
+        let contrastedWeights = rawWeights.map { (target: $0.target,
+                                                  weight: pow($0.weight / total,
+                                                              exponent))
+        }
 
-        return rawWeights.map { (target: $0.target,
-                                 weight: pow($0.weight / total,
-                                             exponent))
+        //
+        // Renormalize, so that the result is a probability distribution like
+        // its input, whatever the exponent:
+        //
+        let contrastedTotal = contrastedWeights.reduce(0.0) { $0 + $1.weight }
+
+        guard contrastedTotal > 0
+        else { return [] }
+
+        return contrastedWeights.map { (target: $0.target,
+                                        weight: $0.weight / contrastedTotal)
         }
     }
 }

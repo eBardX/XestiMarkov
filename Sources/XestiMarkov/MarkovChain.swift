@@ -143,13 +143,15 @@ extension MarkovChain {
     // MARK: Internal Instance Methods
 
     internal func increment(inContext: Context<State>,
-                            outContext: Context<State>) {
+                            outContext: Context<State>,
+                            by weight: UInt = 1) {
         lock.withLock {
             let (_, _, outIndex) = unsafeOutContextMap.insert(element: outContext)
             let (_, _, inIndex) = unsafeInContextMap.insert(element: inContext)
 
             unsafeAccumulator.increment(inIndex: inIndex,
-                                        outIndex: outIndex)
+                                        outIndex: outIndex,
+                                        by: weight)
         }
     }
 }
@@ -204,9 +206,7 @@ extension MarkovChain: Codable {
 extension MarkovChain: @unchecked Sendable {
 }
 
-// MARK: -
-
-// MARK: Public Constants
+// MARK: - Public Constants
 
 /// The default order used when creating a ``MarkovChain`` or
 /// ``MarkovChain/Generator``.

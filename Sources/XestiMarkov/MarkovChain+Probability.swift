@@ -55,6 +55,16 @@ extension MarkovChain {
         case .begin:
             return .begin
 
+        case let .beginStates(states):
+            var context: Context<State> = .begin
+
+            for state in states {
+                context.append(context: .single(state),
+                               limit: states.count + 1)
+            }
+
+            return context
+
         case let .states(states):
             guard !states.isEmpty
             else { return nil }

@@ -50,7 +50,7 @@ extension FallbackGenerator {
             committed = true
         }
 
-        return secondary.next(after: [])
+        return secondary.next(after: states)
     }
 
     internal func weights(after source: Source) -> [WeightedTarget] {

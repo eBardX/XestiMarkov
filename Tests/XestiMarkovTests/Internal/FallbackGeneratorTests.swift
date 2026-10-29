@@ -95,7 +95,29 @@ extension FallbackGeneratorTests {
 
         let chainS = try #require(MarkovChain<String>(maximumOrder: 1))
 
-        // Secondary: begin → "x"
+        // Secondary: begin → "x"; "a" → "y"
+        chainS.analyzer().analyze(sequences: [["x"], ["a", "y"]])
+
+        let p: any MarkovChain<String>.Generator = try #require(SimpleGenerator(markovChain: chainP, order: 1))
+        let s: any MarkovChain<String>.Generator = try #require(SimpleGenerator(markovChain: chainS, order: 1))
+
+        var gen = FallbackGenerator(primary: p, secondary: s, committing: false)
+
+        // Primary produces "a" then terminates (nil). Fallback continues
+        // after "a" with "y"; it does not restart from begin.
+        #expect(gen.next(after: []) == "a")
+        #expect(gen.next(after: ["a"]) == "y")  // primary returns nil; secondary used
+    }
+
+    @Test
+    func next_terminal_secondaryWithoutContext_returnsNil() throws {
+        let chainP = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        chainP.analyzer().analyze(sequence: ["a"])
+
+        let chainS = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        // Secondary knows nothing after "a".
         chainS.analyzer().analyze(sequence: ["x"])
 
         let p: any MarkovChain<String>.Generator = try #require(SimpleGenerator(markovChain: chainP, order: 1))
@@ -103,9 +125,7 @@ extension FallbackGeneratorTests {
 
         var gen = FallbackGenerator(primary: p, secondary: s, committing: false)
 
-        // Primary produces "a" then terminates (nil). Fallback produces "x".
-        #expect(gen.next(after: []) == "a")
-        #expect(gen.next(after: ["a"]) == "x")  // primary returns nil; secondary used
+        #expect(gen.next(after: ["a"]) == nil)
     }
 
     @Test

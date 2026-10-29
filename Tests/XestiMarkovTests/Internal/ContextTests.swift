@@ -363,6 +363,13 @@ extension ContextTests {
     }
 
     @Test
+    func hashable() {
+        let contexts: Set<Context<Int>> = [.begin, .end, .begin, .single(1), .single(1), .zero]
+
+        #expect(contexts.count == 4)
+    }
+
+    @Test
     func hasNext_sequence() {
         let seq0: Context<Int> = makeContext([])
         let seq1: Context<Int> = makeContext([.begin])
@@ -391,9 +398,30 @@ extension ContextTests {
     }
 
     @Test
-    func hashable() {
-        let contexts: Set<Context<Int>> = [.begin, .end, .begin, .single(1), .single(1), .zero]
+    func order() {
+        let bilbo: Context<String> = .single("bilbo")
+        let frodo: Context<String> = .single("frodo")
 
-        #expect(contexts.count == 4)
+        #expect(Context<String>.begin.order == 1)
+        #expect(Context<String>.end.order == nil)
+        #expect(makeContext([.begin, bilbo, frodo]).order == 3)
+        #expect(bilbo.order == 1)
+        #expect(Context<String>.zero.order == 0)
+    }
+
+    @Test
+    func shortened() {
+        let begin: Context<Int> = .begin
+        let single: Context<Int> = .single(1)
+        let anchored = makeContext([.begin, .single(1), .single(2)])
+        let unanchored = makeContext([.single(1), .single(2), .single(3)])
+
+        #expect(begin.shortened == .zero)
+        #expect(single.shortened == .zero)
+        #expect(Context<Int>.zero.shortened == nil)
+        #expect(Context<Int>.end.shortened == nil)
+        #expect(anchored.shortened == makeContext([.single(1), .single(2)]))
+        #expect(anchored.shortened?.shortened == .single(2))
+        #expect(unanchored.shortened == makeContext([.single(2), .single(3)]))
     }
 }

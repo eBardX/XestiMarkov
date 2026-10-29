@@ -28,11 +28,43 @@ extension LoopingGenerator {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func generate(until predicate: (State) -> Bool) -> [State] {
-        var result: [State] = []
-        var history: [State] = []
+    internal mutating func generate(continuing states: [State],
+                                    until predicate: (State) -> Bool) -> [State] {
+        _generate(continuing: states,
+                  limit: nil,
+                  until: predicate)
+    }
 
-        while true {
+    internal mutating func generate(continuing states: [State],
+                                    upTo limit: Int) -> [State] {
+        guard limit > 0
+        else { return [] }
+
+        return _generate(continuing: states,
+                         limit: limit) { _ in false }
+    }
+
+    internal mutating func next(after states: [State]) -> State? {
+        if let state = source.next(after: states) {
+            return state
+        }
+
+        return source.next(after: [])
+    }
+
+    internal func weights(after source: Source) -> [WeightedTarget] {
+        self.source.weights(after: source).filter { $0.target != .end }
+    }
+
+    // MARK: Private Instance Methods
+
+    private mutating func _generate(continuing states: [State],
+                                    limit: Int?,
+                                    until predicate: (State) -> Bool) -> [State] {
+        var result: [State] = []
+        var history = states
+
+        while limit.map({ result.count < $0 }) ?? true {
             let state: State
 
             if let nextState = source.next(after: history) {
@@ -56,43 +88,6 @@ extension LoopingGenerator {
         }
 
         return result
-    }
-
-    internal mutating func generate(upTo limit: Int) -> [State] {
-        guard limit > 0
-        else { return [] }
-
-        var result: [State] = []
-        var history: [State] = []
-
-        while result.count < limit {
-            if let state = source.next(after: history) {
-                result.append(state)
-                history.append(state)
-            } else {
-                history = []
-
-                guard let state = source.next(after: [])
-                else { break }
-
-                result.append(state)
-                history.append(state)
-            }
-        }
-
-        return result
-    }
-
-    internal mutating func next(after states: [State]) -> State? {
-        if let state = source.next(after: states) {
-            return state
-        }
-
-        return source.next(after: [])
-    }
-
-    internal func weights(after source: Source) -> [WeightedTarget] {
-        self.source.weights(after: source).filter { $0.target != .end }
     }
 }
 

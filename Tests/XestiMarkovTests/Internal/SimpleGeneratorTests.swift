@@ -63,6 +63,21 @@ extension SimpleGeneratorTests {
     }
 
     @Test
+    func weights_beginStates_alwaysAnchored() throws {
+        let chain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        chain.analyzer().analyze(sequences: [["a", "b"], ["c", "a", "c"]])
+
+        let gen = try #require(SimpleGenerator(markovChain: chain,
+                                               order: 2,
+                                               startsAtBegin: false))
+
+        // [begin, a] → b only, even though the generator is unanchored.
+        #expect(gen.weights(after: .beginStates(["a"])).map(\.target) == [.state("b")])
+        #expect(gen.weights(after: .states(["a"])).map(\.target) == [.state("b"), .state("c")])
+    }
+
+    @Test
     func weights_states_order1() throws {
         let chain = try #require(MarkovChain<String>(maximumOrder: 1))
 
@@ -113,5 +128,18 @@ extension SimpleGeneratorTests {
         let weights = gen.weights(after: .states(["z"]))
 
         #expect(weights.isEmpty)
+    }
+
+    @Test
+    func weights_zero() throws {
+        let chain = try #require(MarkovChain<String>(maximumOrder: 1))
+
+        chain.analyzer().analyze(sequence: ["a", "a", "b"])
+
+        let gen = try #require(SimpleGenerator(markovChain: chain, order: 1))
+        let weights = gen.weights(after: .zero)
+
+        #expect(weights.map(\.target) == [.state("a"), .state("b")])
+        #expect(weights.map(\.weight) == [2, 1])
     }
 }

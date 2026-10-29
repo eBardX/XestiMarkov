@@ -10,6 +10,21 @@ struct MarkovChainProbabilityTests {
 
 extension MarkovChainProbabilityTests {
     @Test
+    func probability_beginStates() throws {
+        let markovChain = try #require(MarkovChain<String>(maximumOrder: 2))
+
+        markovChain.analyzer().analyze(sequences: [["a", "b"], ["c", "a", "c"]])
+
+        // Anchored: a opened only ["a", "b"].
+        #expect(markovChain.probability(of: .state("b"), after: .beginStates(["a"])) == 1.0)
+
+        // Unanchored: a → b once, a → c once.
+        #expect(markovChain.probability(of: .state("b"), after: .states(["a"])) == 0.5)
+
+        #expect(markovChain.probability(of: .state("a"), after: .beginStates([])) == 0.5)
+    }
+
+    @Test
     func probability_deterministic_begin() throws {
         let markovChain = try #require(MarkovChain<String>(maximumOrder: 1))
 

@@ -47,6 +47,26 @@ extension Context {
         }
     }
 
+    internal var shortened: Self? {
+        switch self {
+        case .begin,
+             .single:
+            return .zero
+
+        case .end,
+             .zero:
+            return nil
+
+        case let .sequence(seq):
+            let rest = seq.contexts.dropFirst()
+
+            return rest.reduce(into: .zero) {
+                $0.append(context: $1,
+                          limit: rest.count)
+            }
+        }
+    }
+
     // MARK: Internal Instance Methods
 
     internal mutating func append(context: Self,

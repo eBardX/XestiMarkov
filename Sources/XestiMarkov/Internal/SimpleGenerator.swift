@@ -9,6 +9,8 @@ internal struct SimpleGenerator<State> where State: Codable,
 
     internal init?(markovChain: MarkovChain<State>,
                    order: Int,
+                   startsAtBegin: Bool = true,
+                   stopsAtEnd: Bool = true,
                    rng: AnyRandomNumberGenerator = AnyRandomNumberGenerator(SystemRandomNumberGenerator())) {
         guard (0...markovChain.maximumOrder) ~= order
         else { return nil }
@@ -16,20 +18,26 @@ internal struct SimpleGenerator<State> where State: Codable,
         let ss = markovChain.snapshot
 
         self.accumulator = ss.accumulator
+        self.excludedOutIndex = stopsAtEnd ? nil : ss.outContextMap[.end]
         self.inContextMap = ss.inContextMap
         self.order = order
         self.outContextMap = ss.outContextMap
         self.simpleMarkovChain = SimpleMarkovChain(accumulator: ss.accumulator,
                                                    rng: rng)
+        self.startsAtBegin = startsAtBegin
+        self.stopsAtEnd = stopsAtEnd
     }
 
     // MARK: Internal Instance Properties
 
     internal let order: Int
+    internal let startsAtBegin: Bool
+    internal let stopsAtEnd: Bool
 
     // MARK: Private Instance Properties
 
     private let accumulator: Accumulator
+    private let excludedOutIndex: Int?
     private let inContextMap: IndexMap<Context<State>>
     private let outContextMap: IndexMap<Context<State>>
 
@@ -48,27 +56,25 @@ extension SimpleGenerator {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func generate(until predicate: (State) -> Bool) -> [State] {
-        if order > 0 {
-            _generateN(until: predicate)
-        } else {
-            _generate0(until: predicate)
-        }
+    internal mutating func generate(continuing states: [State],
+                                    until predicate: (State) -> Bool) -> [State] {
+        _generate(continuing: states,
+                  limit: nil,
+                  until: predicate)
     }
 
-    internal mutating func generate(upTo limit: Int) -> [State] {
+    internal mutating func generate(continuing states: [State],
+                                    upTo limit: Int) -> [State] {
         guard limit > 0
         else { return [] }
 
-        return if order > 0 {
-            _generateN(upTo: limit)
-        } else {
-            _generate0(upTo: limit)
-        }
+        return _generate(continuing: states,
+                         limit: limit) { _ in false }
     }
 
     internal mutating func next(after states: [State]) -> State? {
-        let context = _context(for: states)
+        let context = _context(for: states,
+                               anchored: startsAtBegin)
 
         guard let nextContext = _next(after: context),
               case let .single(state) = nextContext
@@ -80,20 +86,27 @@ extension SimpleGenerator {
     internal func weights(after source: Source) -> [WeightedTarget] {
         let context: Context<State> = switch source {
         case .begin:
-            _context(for: [])
+            _context(for: [],
+                     anchored: startsAtBegin)
+
+        case let .beginStates(states):
+            _context(for: states,
+                     anchored: true)
 
         case let .states(states):
-            _context(for: states)
+            _context(for: states,
+                     anchored: startsAtBegin)
 
         case .zero:
             .zero
         }
 
-        guard let inIndex = inContextMap[context]
+        guard let inIndex = _inIndex(for: context)
         else { return [] }
 
-        return accumulator.extractElements(for: inIndex).compactMap { element in
-            guard let outContext = outContextMap[element.key.outIndex]
+        let distribution: [WeightedTarget] = accumulator.extractElements(for: inIndex).compactMap { element in
+            guard element.key.outIndex != excludedOutIndex,
+                  let outContext = outContextMap[element.key.outIndex]
             else { return nil }
 
             switch outContext {
@@ -109,18 +122,22 @@ extension SimpleGenerator {
                 return nil
             }
         }
+
+        return sortByTarget(distribution)
     }
 
     // MARK: Private Instance Methods
 
-    private func _context(for states: [State]) -> Context<State> {
-        guard order > 0
-        else { return .zero }
-
-        guard !states.isEmpty
-        else { return .begin }
-
-        var context: Context<State> = .begin
+    //
+    // Builds the context in which to choose the state that follows `states`.
+    // An anchored context begins at `.begin` (so a history shorter than the
+    // order is treated as the opening of a sequence); an unanchored one
+    // begins at `.zero` (so the first state is chosen by frequency, and a
+    // short history uses a shorter context).
+    //
+    private func _context(for states: [State],
+                          anchored: Bool) -> Context<State> {
+        var context: Context<State> = order > 0 && anchored ? .begin : .zero
 
         for state in states.suffix(order) {
             context.append(context: .single(state),
@@ -130,48 +147,20 @@ extension SimpleGenerator {
         return context
     }
 
-    private mutating func _generate0(until predicate: (State) -> Bool) -> [State] {
-        var states: [State] = []
+    private mutating func _generate(continuing states: [State],
+                                    limit: Int?,
+                                    until predicate: (State) -> Bool) -> [State] {
+        var prevContext = _context(for: states,
+                                   anchored: startsAtBegin)
+        var result: [State] = []
 
-        while true {
-            guard let nextContext = _next(after: .zero),
-                  case let .single(state) = nextContext
-            else { break }
-
-            states.append(state)
-
-            guard !predicate(state)
-            else { break }
-        }
-
-        return states
-    }
-
-    private mutating func _generate0(upTo limit: Int) -> [State] {
-        var states: [State] = []
-
-        for _ in 0..<limit {
-            guard let nextContext = _next(after: .zero),
-                  case let .single(state) = nextContext
-            else { break }
-
-            states.append(state)
-        }
-
-        return states
-    }
-
-    private mutating func _generateN(until predicate: (State) -> Bool) -> [State] {
-        var prevContext: Context<State> = .begin
-        var states: [State] = []
-
-        while true {
+        while limit.map({ result.count < $0 }) ?? true {
             guard prevContext.hasNext,
                   let nextContext = _next(after: prevContext),
                   case let .single(state) = nextContext
             else { break }
 
-            states.append(state)
+            result.append(state)
 
             guard !predicate(state)
             else { break }
@@ -180,34 +169,40 @@ extension SimpleGenerator {
                                limit: order)
         }
 
-        return states
+        return result
     }
 
-    private mutating func _generateN(upTo limit: Int) -> [State] {
-        var prevContext: Context<State> = .begin
-        var states: [State] = []
+    //
+    // Returns the index of the context from which to choose the next state.
+    // When `.end` is excluded, a context whose only successor is `.end` (or a
+    // context never observed) backs off to successively shorter contexts,
+    // down to `.zero`.
+    //
+    private func _inIndex(for context: Context<State>) -> Int? {
+        var context = context
 
-        for _ in 0..<limit {
-            guard prevContext.hasNext,
-                  let nextContext = _next(after: prevContext),
-                  case let .single(state) = nextContext
-            else { break }
+        while true {
+            if let inIndex = inContextMap[context],
+               simpleMarkovChain.totalWeight(after: inIndex,
+                                             excluding: excludedOutIndex) > 0 {
+                return inIndex
+            }
 
-            states.append(state)
+            guard !stopsAtEnd,
+                  let shorterContext = context.shortened
+            else { return nil }
 
-            prevContext.append(context: nextContext,
-                               limit: order)
+            context = shorterContext
         }
-
-        return states
     }
 
     private mutating func _next(after inContext: Context<State>) -> Context<State>? {
-        guard let simpleInIndex = inContextMap[inContext],
-              let simpleOutIndex = simpleMarkovChain.next(after: simpleInIndex)
+        guard let inIndex = _inIndex(for: inContext),
+              let outIndex = simpleMarkovChain.next(after: inIndex,
+                                                    excluding: excludedOutIndex)
         else { return nil }
 
-        return outContextMap[simpleOutIndex]
+        return outContextMap[outIndex]
     }
 }
 
