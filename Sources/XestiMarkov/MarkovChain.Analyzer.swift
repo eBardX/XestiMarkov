@@ -28,7 +28,8 @@ extension MarkovChain.Analyzer {
     /// Analyzes the provided state sequence and records the observed
     /// transitions into the Markov chain.
     ///
-    /// If `sequence` is empty, this method has no effect.
+    /// If `sequence` is empty, this method has no effect. A sequence too short
+    /// for the higher orders records only the orders it can fill.
     ///
     /// - Parameter sequence:   The sequence of states to analyze.
     public func analyze(sequence: [State]) {
@@ -117,6 +118,12 @@ extension MarkovChain.Analyzer {
 
     private func _analyzeN(contexts: [Context<State>],
                            order: Int) {
+        //
+        // A sequence too short for `order` has no transitions of that order to record.
+        //
+        guard contexts.count > order
+        else { return }
+
         for idx in 0..<(contexts.count - order) {
             let nextIdx = idx + order
             let currContext = _combineSlice(contexts: contexts[idx..<nextIdx])

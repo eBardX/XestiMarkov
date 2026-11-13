@@ -70,6 +70,36 @@ extension MarkovChainAnalyzerTests {
     }
 
     @Test
+    func analyzeSequence_shorterThanMaximumOrder_doesNotTrap() async {
+        //
+        // One state makes three contexts with the begin and end markers, so orders above 3 have
+        // no transitions to record and should be skipped rather than trap.
+        //
+        await #expect(processExitsWith: .success) {
+            let markovChain = MarkovChain<String>(maximumOrder: 4)
+
+            markovChain?.analyzer().analyze(sequence: ["a"])
+        }
+    }
+
+    @Test
+    func analyzeSequence_shorterThanMaximumOrder_recordsTheLowerOrders() throws {
+        let fullChain = try #require(MarkovChain<String>(maximumOrder: 3))
+        let tallChain = try #require(MarkovChain<String>(maximumOrder: 9))
+
+        fullChain.analyzer().analyze(sequence: ["a"])
+        tallChain.analyzer().analyze(sequence: ["a"])
+
+        let expected = fullChain.snapshot
+        let snapshot = tallChain.snapshot
+
+        #expect(!snapshot.accumulator.isEmpty)
+        #expect(snapshot.accumulator.count == expected.accumulator.count)
+        #expect(snapshot.inContextMap.count == expected.inContextMap.count)
+        #expect(snapshot.outContextMap.count == expected.outContextMap.count)
+    }
+
+    @Test
     func analyzeSequence_strings() throws {
         let states = ["this",
                       "is",
